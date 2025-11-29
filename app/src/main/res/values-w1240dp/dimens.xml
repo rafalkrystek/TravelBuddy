@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="spacing_tiny">8dp</dimen>
+    <dimen name="spacing_small">16dp</dimen>
+    <dimen name="spacing_medium">32dp</dimen>
+    <dimen name="spacing_large">48dp</dimen>
+    <dimen name="spacing_xlarge">64dp</dimen>
+    <dimen name="spacing_xxlarge">96dp</dimen>
+    
+    <dimen name="padding_small">20dp</dimen>
+    <dimen name="padding_medium">32dp</dimen>
+    <dimen name="padding_large">48dp</dimen>
+    <dimen name="padding_xlarge">64dp</dimen>
+    <dimen name="padding_xxlarge">96dp</dimen>
+    
+    <dimen name="text_size_tiny">12sp</dimen>
+    <dimen name="text_size_small">14sp</dimen>
+    <dimen name="text_size_medium">16sp</dimen>
+    <dimen name="text_size_large">20sp</dimen>
+    <dimen name="text_size_xlarge">28sp</dimen>
+    <dimen name="text_size_xxlarge">32sp</dimen>
+    <dimen name="text_size_title">40sp</dimen>
+    <dimen name="text_size_huge">48sp</dimen>
+    <dimen name="text_size_logo">64sp</dimen>
+    
+    <dimen name="icon_size_small">32dp</dimen>
+    <dimen name="icon_size_medium">72dp</dimen>
+    <dimen name="icon_size_large">96dp</dimen>
+    <dimen name="icon_size_xlarge">144dp</dimen>
+    <dimen name="logo_size">320dp</dimen>
+    
+    <dimen name="button_height">72dp</dimen>
+    <dimen name="button_corner_radius">36dp</dimen>
+    <dimen name="card_corner_radius">24dp</dimen>
+    
+    <dimen name="card_elevation">8dp</dimen>
+    <dimen name="card_elevation_large">16dp</dimen>
+    <dimen name="card_padding">32dp</dimen>
+    <dimen name="card_height">160dp</dimen>
+    
+    <dimen name="input_corner_radius">20dp</dimen>
+    <dimen name="input_stroke_width">3dp</dimen>
+    
+    <dimen name="margin_small">16dp</dimen>
+    <dimen name="margin_medium">32dp</dimen>
+    <dimen name="margin_large">48dp</dimen>
+    <dimen name="margin_xlarge">64dp</dimen>
+    
+    <dimen name="max_content_width">1200dp</dimen>
+    
+    <dimen name="fab_margin">200dp</dimen>
+</resources>

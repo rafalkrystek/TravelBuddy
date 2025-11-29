@@ -1,0 +1,73 @@
+﻿<resources>
+    <string name="app_name">Travel Buddy</string>
+
+    <string name="travel_buddy_title">Travel Buddy</string>
+    <string name="login_button">Login</string>
+    <string name="register_button">Register</string>
+    <string name="settings_description">Settings</string>
+    <string name="user_icon_description">User</string>
+    <string name="logo_description">Travel Buddy Logo</string>
+
+    <string name="welcome_back">Welcome Back!</string>
+    <string name="sign_in_subtitle">Sign in to continue your journey</string>
+    <string name="email_hint">Email</string>
+    <string name="password_hint">Password</string>
+    <string name="forgot_password">Forgot Password?</string>
+    <string name="sign_in_button">Sign In</string>
+    <string name="dont_have_account">Don\'t have an account?</string>
+    <string name="sign_up_link">Sign Up</string>
+    <string name="or_divider">OR</string>
+    <string name="back_button_description">Back</string>
+
+    <string name="create_account">Create Account</string>
+    <string name="join_us_subtitle">Join us and start your adventure</string>
+    <string name="first_name_hint">First Name</string>
+    <string name="last_name_hint">Last Name</string>
+    <string name="confirm_password_hint">Confirm Password</string>
+    <string name="terms_agreement">I agree to the Terms and Conditions and Privacy Policy</string>
+    <string name="create_account_button">Create Account</string>
+    <string name="already_have_account">Already have an account?</string>
+    <string name="sign_in_link">Sign In</string>
+
+    <string name="dashboard_welcome">Witaj w TravelBuddy!</string>
+    <string name="plan_trip">Zaplanuj podróż</string>
+    <string name="your_trips">Twoje podróże</string>
+    <string name="packing_assistant">Asystent pakowania</string>
+    <string name="logout">Wyloguj się</string>
+
+    <string name="plan_trip_title">Zaplanuj podróż</string>
+    <string name="destination_hint">Gdzie chcesz pojechać?</string>
+    <string name="start_date_hint">Data rozpoczęcia</string>
+    <string name="end_date_hint">Data zakończenia</string>
+    <string name="date_range_hint">Wybierz daty podróży</string>
+    <string name="budget_hint">Budżet (PLN)</string>
+    <string name="create_trip">Utwórz podróż</string>
+
+    <string name="your_trips_title">Twoje podróże</string>
+    <string name="no_trips_yet">Nie masz jeszcze żadnych podróży</string>
+    <string name="add_new_trip">Dodaj nową podróż</string>
+
+    <string name="packing_assistant_title">Asystent pakowania</string>
+    <string name="select_trip">Wybierz podróż</string>
+    <string name="packing_list">Lista rzeczy do spakowania</string>
+    <string name="add_item">Dodaj przedmiot</string>
+    <string name="item_name_hint">Nazwa przedmiotu</string>
+    <string name="category_hint">Kategoria</string>
+
+    <string name="email_required">Email is required</string>
+    <string name="password_required">Password is required</string>
+    <string name="first_name_required">First name is required</string>
+    <string name="last_name_required">Last name is required</string>
+    <string name="valid_email_required">Please enter a valid email</string>
+    <string name="password_min_length">Password must be at least 6 characters</string>
+    <string name="confirm_password_required">Please confirm your password</string>
+    <string name="passwords_dont_match">Passwords do not match</string>
+    <string name="accept_terms">Please accept Terms and Conditions</string>
+
+    <string name="login_attempt">Login attempt for: %1$s</string>
+    <string name="registration_successful">Registration successful for: %1$s %2$s</string>
+    <string name="forgot_password_clicked">Forgot Password clicked</string>
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    
+    <string name="google_maps_api_key">YOUR_GOOGLE_MAPS_API_KEY</string>
+</resources>

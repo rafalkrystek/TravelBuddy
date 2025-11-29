@@ -1,0 +1,198 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="countries">
+        <item>Afganistan</item>
+        <item>Albania</item>
+        <item>Algieria</item>
+        <item>Andora</item>
+        <item>Angola</item>
+        <item>Antigua i Barbuda</item>
+        <item>Arabia Saudyjska</item>
+        <item>Argentyna</item>
+        <item>Armenia</item>
+        <item>Australia</item>
+        <item>Austria</item>
+        <item>Azerbejdżan</item>
+        <item>Bahamy</item>
+        <item>Bahrajn</item>
+        <item>Bangladesz</item>
+        <item>Barbados</item>
+        <item>Belgia</item>
+        <item>Belize</item>
+        <item>Benin</item>
+        <item>Bhutan</item>
+        <item>Białoruś</item>
+        <item>Birma</item>
+        <item>Boliwia</item>
+        <item>Bośnia i Hercegowina</item>
+        <item>Botswana</item>
+        <item>Brazylia</item>
+        <item>Brunei</item>
+        <item>Bułgaria</item>
+        <item>Burkina Faso</item>
+        <item>Burundi</item>
+        <item>Chile</item>
+        <item>Chiny</item>
+        <item>Chorwacja</item>
+        <item>Cypr</item>
+        <item>Czad</item>
+        <item>Czarnogóra</item>
+        <item>Czechy</item>
+        <item>Dania</item>
+        <item>Demokratyczna Republika Konga</item>
+        <item>Dominika</item>
+        <item>Dominikana</item>
+        <item>Dżibuti</item>
+        <item>Egipt</item>
+        <item>Ekwador</item>
+        <item>Erytrea</item>
+        <item>Estonia</item>
+        <item>Eswatini</item>
+        <item>Etiopia</item>
+        <item>Fidżi</item>
+        <item>Filipiny</item>
+        <item>Finlandia</item>
+        <item>Francja</item>
+        <item>Gabon</item>
+        <item>Gambia</item>
+        <item>Ghana</item>
+        <item>Grecja</item>
+        <item>Grenada</item>
+        <item>Gruzja</item>
+        <item>Gujana</item>
+        <item>Gwatemala</item>
+        <item>Gwinea</item>
+        <item>Gwinea Bissau</item>
+        <item>Gwinea Równikowa</item>
+        <item>Haiti</item>
+        <item>Honduras</item>
+        <item>Indie</item>
+        <item>Indonezja</item>
+        <item>Irak</item>
+        <item>Iran</item>
+        <item>Irlandia</item>
+        <item>Islandia</item>
+        <item>Izrael</item>
+        <item>Jamajka</item>
+        <item>Japonia</item>
+        <item>Jemen</item>
+        <item>Jordania</item>
+        <item>Kambodża</item>
+        <item>Kamerun</item>
+        <item>Kanada</item>
+        <item>Katar</item>
+        <item>Kazachstan</item>
+        <item>Kenia</item>
+        <item>Kirgistan</item>
+        <item>Kiribati</item>
+        <item>Kolumbia</item>
+        <item>Komory</item>
+        <item>Kongo</item>
+        <item>Korea Południowa</item>
+        <item>Korea Północna</item>
+        <item>Kostaryka</item>
+        <item>Kuba</item>
+        <item>Kuwejt</item>
+        <item>Laos</item>
+        <item>Lesotho</item>
+        <item>Liban</item>
+        <item>Liberia</item>
+        <item>Libia</item>
+        <item>Liechtenstein</item>
+        <item>Litwa</item>
+        <item>Luksemburg</item>
+        <item>Łotwa</item>
+        <item>Macedonia Północna</item>
+        <item>Madagaskar</item>
+        <item>Malawi</item>
+        <item>Malediwy</item>
+        <item>Malezja</item>
+        <item>Mali</item>
+        <item>Malta</item>
+        <item>Maroko</item>
+        <item>Mauretania</item>
+        <item>Mauritius</item>
+        <item>Meksyk</item>
+        <item>Mikronezja</item>
+        <item>Mołdawia</item>
+        <item>Monako</item>
+        <item>Mongolia</item>
+        <item>Mozambik</item>
+        <item>Namibia</item>
+        <item>Nauru</item>
+        <item>Nepal</item>
+        <item>Niemcy</item>
+        <item>Niger</item>
+        <item>Nigeria</item>
+        <item>Nikaragua</item>
+        <item>Norwegia</item>
+        <item>Nowa Zelandia</item>
+        <item>Oman</item>
+        <item>Pakistan</item>
+        <item>Palau</item>
+        <item>Panama</item>
+        <item>Papua-Nowa Gwinea</item>
+        <item>Paragwaj</item>
+        <item>Peru</item>
+        <item>Polska</item>
+        <item>Portugalia</item>
+        <item>Republika Południowej Afryki</item>
+        <item>Republika Środkowoafrykańska</item>
+        <item>Republika Zielonego Przylądka</item>
+        <item>Rosja</item>
+        <item>Rumunia</item>
+        <item>Rwanda</item>
+        <item>Saint Kitts i Nevis</item>
+        <item>Saint Lucia</item>
+        <item>Saint Vincent i Grenadyny</item>
+        <item>Salwador</item>
+        <item>Samoa</item>
+        <item>San Marino</item>
+        <item>Senegal</item>
+        <item>Serbia</item>
+        <item>Seszele</item>
+        <item>Sierra Leone</item>
+        <item>Singapur</item>
+        <item>Słowacja</item>
+        <item>Słowenia</item>
+        <item>Somalia</item>
+        <item>Sri Lanka</item>
+        <item>Stany Zjednoczone</item>
+        <item>Sudan</item>
+        <item>Sudan Południowy</item>
+        <item>Surinam</item>
+        <item>Syria</item>
+        <item>Szwajcaria</item>
+        <item>Szwecja</item>
+        <item>Tajlandia</item>
+        <item>Tajwan</item>
+        <item>Tanzania</item>
+        <item>Timor Wschodni</item>
+        <item>Togo</item>
+        <item>Tonga</item>
+        <item>Trynidad i Tobago</item>
+        <item>Tunezja</item>
+        <item>Turcja</item>
+        <item>Turkmenistan</item>
+        <item>Tuvalu</item>
+        <item>Uganda</item>
+        <item>Ukraina</item>
+        <item>Urugwaj</item>
+        <item>Uzbekistan</item>
+        <item>Vanuatu</item>
+        <item>Watykan</item>
+        <item>Wenezuela</item>
+        <item>Węgry</item>
+        <item>Wielka Brytania</item>
+        <item>Wietnam</item>
+        <item>Włochy</item>
+        <item>Wybrzeże Kości Słoniowej</item>
+        <item>Wyspy Marshalla</item>
+        <item>Wyspy Salomona</item>
+        <item>Wyspy Świętego Tomasza i Książęca</item>
+        <item>Zambia</item>
+        <item>Zimbabwe</item>
+        <item>Zjednoczone Emiraty Arabskie</item>
+    </string-array>
+</resources>
+

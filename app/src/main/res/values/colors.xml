@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    
+    <color name="beige_light">#F5F5DC</color>
+    <color name="beige_medium">#E8E8D8</color>
+    <color name="beige_dark">#D4D4C4</color>
+    
+    <color name="red_primary">#DC143C</color>
+    <color name="red_dark">#B01030</color>
+    <color name="red_light">#FF4D6D</color>
+    
+    <color name="text_primary">#2C2C2C</color>
+    <color name="text_secondary">#666666</color>
+    <color name="text_hint">#999999</color>
+    
+    <color name="card_background">#FFFFFF</color>
+    <color name="divider">#E0E0E0</color>
+</resources>

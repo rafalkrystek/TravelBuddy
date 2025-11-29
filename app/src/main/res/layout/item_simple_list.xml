@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:padding="@dimen/padding_medium"
+    android:layout_marginBottom="@dimen/spacing_small"
+    android:background="?attr/selectableItemBackground">
+
+    <TextView
+        android:id="@+id/itemTextView"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        style="@style/TextAppearance.TravelBuddy.Body"
+        android:text="Przykładowa rzecz"
+        android:layout_marginEnd="@dimen/spacing_medium" />
+
+    <ImageButton
+        android:id="@+id/itemDeleteButton"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:src="@android:drawable/ic_menu_delete"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="Usuń"
+        android:padding="4dp" />
+
+</LinearLayout>
+
