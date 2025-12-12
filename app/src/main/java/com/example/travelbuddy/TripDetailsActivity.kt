@@ -2,14 +2,16 @@ package com.example.travelbuddy
 
 import android.content.Intent
 import android.os.Bundle
-import android.widget.LinearLayout
+import android.view.View
 import android.widget.TextView
 import android.widget.Toast
 import androidx.cardview.widget.CardView
+import com.example.travelbuddy.helpers.getTripDocument
+import com.example.travelbuddy.helpers.putTripExtras
+import com.example.travelbuddy.helpers.setupBackButton
 import com.google.firebase.firestore.FirebaseFirestore
 
 class TripDetailsActivity : BaseActivity() {
-    private lateinit var db: FirebaseFirestore
     private lateinit var tripId: String
     private var destination: String = ""
     private var startDate: String = ""
@@ -19,7 +21,6 @@ class TripDetailsActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_trip_details)
-        db = FirebaseFirestore.getInstance()
         tripId = intent.getStringExtra("trip_id") ?: ""
         destination = intent.getStringExtra("trip_destination") ?: ""
         startDate = intent.getStringExtra("trip_start_date") ?: ""
@@ -33,47 +34,31 @@ class TripDetailsActivity : BaseActivity() {
         }
 
         loadTripData()
-        findViewById<android.widget.ImageButton>(R.id.backButton).setOnClickListener { finish() }
+        setupBackButton()
         findViewById<TextView>(R.id.destinationTextView).text = destination
         findViewById<TextView>(R.id.dateRangeTextView).text = "$startDate - $endDate"
 
-        // Quick Actions
-        findViewById<LinearLayout>(R.id.weatherQuick).setOnClickListener { openWeather() }
-        findViewById<LinearLayout>(R.id.packingQuick).setOnClickListener { openPacking() }
-        findViewById<LinearLayout>(R.id.plannerQuick).setOnClickListener { openPlanner() }
-
-        // Cards
-        findViewById<CardView>(R.id.weatherCard).setOnClickListener { openWeather() }
-        findViewById<CardView>(R.id.packingAssistantCard).setOnClickListener { openPacking() }
-        findViewById<CardView>(R.id.activityPlannerCard).setOnClickListener { openPlanner() }
+        mapOf(
+            R.id.weatherQuick to ::openWeather,
+            R.id.weatherCard to ::openWeather,
+            R.id.packingQuick to ::openPacking,
+            R.id.packingAssistantCard to ::openPacking,
+            R.id.plannerQuick to ::openPlanner,
+            R.id.activityPlannerCard to ::openPlanner
+        ).forEach { (id, action) -> findViewById<View>(id).setOnClickListener { action() } }
         findViewById<CardView>(R.id.budgetCalculatorCard).setOnClickListener { openBudget() }
     }
     
     private fun openWeather() {
-        startActivity(Intent(this, WeatherActivity::class.java).apply {
-            putExtra("trip_id", tripId)
-            putExtra("trip_destination", destination)
-            putExtra("trip_start_date", startDate)
-            putExtra("trip_end_date", endDate)
-        })
+        startActivity(Intent(this, WeatherActivity::class.java).putTripExtras(tripId, destination, startDate, endDate))
     }
     
     private fun openPacking() {
-        startActivity(Intent(this, TripPackingAssistantActivity::class.java).apply {
-            putExtra("trip_id", tripId)
-            putExtra("trip_destination", destination)
-            putExtra("trip_start_date", startDate)
-            putExtra("trip_end_date", endDate)
-        })
+        startActivity(Intent(this, TripPackingAssistantActivity::class.java).putTripExtras(tripId, destination, startDate, endDate))
     }
     
     private fun openPlanner() {
-        startActivity(Intent(this, ActivityPlannerActivity::class.java).apply {
-            putExtra("trip_id", tripId)
-            putExtra("trip_destination", destination)
-            putExtra("trip_start_date", startDate)
-            putExtra("trip_end_date", endDate)
-        })
+        startActivity(Intent(this, ActivityPlannerActivity::class.java).putTripExtras(tripId, destination, startDate, endDate))
     }
     
     private fun openBudget() {
@@ -90,7 +75,7 @@ class TripDetailsActivity : BaseActivity() {
     }
 
     private fun loadTripData() {
-        db.collection("trips").document(tripId).get().addOnSuccessListener { doc ->
+        FirebaseFirestore.getInstance().getTripDocument(tripId).get().addOnSuccessListener { doc ->
             budget = (doc.getLong("budget") ?: 0).toInt()
             destination = doc.getString("destination") ?: destination
             startDate = doc.getString("startDate") ?: startDate

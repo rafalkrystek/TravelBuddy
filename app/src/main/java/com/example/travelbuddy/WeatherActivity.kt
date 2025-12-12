@@ -7,6 +7,9 @@ import android.widget.Button
 import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
+import com.example.travelbuddy.helpers.DropdownHelper
+import com.example.travelbuddy.helpers.getTripDocument
+import com.example.travelbuddy.helpers.setupBackButton
 import com.google.android.material.textfield.MaterialAutoCompleteTextView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -21,9 +24,6 @@ import java.util.*
 import javax.net.ssl.HttpsURLConnection
 
 class WeatherActivity : BaseActivity() {
-    
-    private lateinit var auth: FirebaseAuth
-    private lateinit var db: FirebaseFirestore
     private lateinit var tripId: String
     private lateinit var destination: String
     private var tripCountry: String = ""
@@ -38,8 +38,6 @@ class WeatherActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_weather)
 
-        auth = FirebaseAuth.getInstance()
-        db = FirebaseFirestore.getInstance()
 
         tripId = intent.getStringExtra("trip_id") ?: ""
         destination = intent.getStringExtra("trip_destination") ?: ""
@@ -52,7 +50,6 @@ class WeatherActivity : BaseActivity() {
             return
         }
 
-        val backButton = findViewById<ImageButton>(R.id.backButton)
         val destinationTextView = findViewById<TextView>(R.id.destinationTextView)
         val dateRangeTextView = findViewById<TextView>(R.id.dateRangeTextView)
         weatherCitySpinner = findViewById(R.id.weatherCitySpinner)
@@ -63,46 +60,28 @@ class WeatherActivity : BaseActivity() {
         destinationTextView.text = destination
         dateRangeTextView.text = "$startDate - $endDate"
 
-        // Pobierz dane podróży z Firebase, żeby uzyskać kraj
         loadTripCountryAndSetupWeather()
-        
-        backButton.setOnClickListener {
-            finish()
-        }
+        setupBackButton()
 
         loadWeatherButton.setOnClickListener { loadWeather() }
     }
     
     private fun loadTripCountryAndSetupWeather() {
-        db.collection("trips")
-            .document(tripId)
-            .get()
+        FirebaseFirestore.getInstance().getTripDocument(tripId).get()
             .addOnSuccessListener { document ->
-                // Pobierz kraj z dokumentu - nowe podróże mają pole "country"
                 tripCountry = document.getString("country") ?: ""
                 tripCity = document.getString("city") ?: ""
                 
-                // Jeśli nie ma osobnego pola country, spróbuj wyciągnąć z destination
-                if (tripCountry.isEmpty() && destination.contains(",")) {
-                    // Destination w formacie "Miasto, Kraj"
-                    val parts = destination.split(",").map { it.trim() }
-                    if (parts.size >= 2) {
-                        tripCity = parts[0]
-                        tripCountry = parts[1]
-                    }
-                } else if (tripCountry.isEmpty()) {
-                    // Stary format - destination to sam kraj
-                    tripCountry = destination
+                if (tripCountry.isEmpty()) {
+                    val (city, country) = DestinationParser.parseDestination(destination)
+                    tripCity = city
+                    tripCountry = country
                 }
-                
-                Log.d("WeatherActivity", "Trip country: $tripCountry, city: $tripCity")
                 
                 setupWeather()
                 loadWeatherData()
             }
-            .addOnFailureListener { e ->
-                Log.e("WeatherActivity", "Error loading trip data", e)
-                // Fallback - użyj destination jako kraju
+            .addOnFailureListener {
                 tripCountry = destination
                 setupWeather()
                 loadWeatherData()
@@ -110,43 +89,21 @@ class WeatherActivity : BaseActivity() {
     }
 
     private fun setupWeather() {
-        // Pobierz miasta TYLKO dla wybranego kraju
         val cities = CountryCitiesData.getCitiesForCountry(tripCountry)
+        val inputLayout = weatherCitySpinner.parent.parent as? com.google.android.material.textfield.TextInputLayout
         
         if (cities.isNotEmpty()) {
-            val adapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, cities)
-            weatherCitySpinner.setAdapter(adapter)
-            
-            // Ustaw hint z informacją o kraju
-            (weatherCitySpinner.parent.parent as? com.google.android.material.textfield.TextInputLayout)?.hint = 
-                "Wybierz miasto w $tripCountry"
-            
-            // Jeśli mamy miasto z podróży i jest na liście, ustaw je domyślnie
+            weatherCitySpinner.setAdapter(ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, cities))
+            weatherCitySpinner.threshold = 1
+            inputLayout?.hint = "Wybierz miasto w $tripCountry"
             if (tripCity.isNotEmpty() && cities.contains(tripCity)) {
                 weatherCitySpinner.setText(tripCity, false)
             }
+            DropdownHelper.setupDropdownListeners(weatherCitySpinner)
         } else {
-            // Brak zdefiniowanych miast dla tego kraju - pozwól na ręczne wpisanie
             weatherCitySpinner.setAdapter(null)
-            (weatherCitySpinner.parent.parent as? com.google.android.material.textfield.TextInputLayout)?.hint = 
-                "Wpisz miasto w $tripCountry"
-            
-            // Jeśli mamy miasto z podróży, ustaw je
-            if (tripCity.isNotEmpty()) {
-                weatherCitySpinner.setText(tripCity, false)
-            }
-        }
-        
-        weatherCitySpinner.threshold = 1
-        weatherCitySpinner.setOnFocusChangeListener { _, hasFocus ->
-            if (hasFocus && cities.isNotEmpty()) {
-                weatherCitySpinner.showDropDown()
-            }
-        }
-        weatherCitySpinner.setOnClickListener {
-            if (cities.isNotEmpty()) {
-                weatherCitySpinner.showDropDown()
-            }
+            inputLayout?.hint = "Wpisz miasto w $tripCountry"
+            if (tripCity.isNotEmpty()) weatherCitySpinner.setText(tripCity, false)
         }
     }
 
@@ -292,45 +249,24 @@ class WeatherActivity : BaseActivity() {
     }
 
     private fun saveWeatherData(city: String, weatherText: String) {
-        val user = auth.currentUser
-        if (user == null) return
-
-        val weatherData = hashMapOf(
+        FirebaseFirestore.getInstance().getTripDocument(tripId).update(hashMapOf(
             "weatherCity" to city,
             "weatherInfo" to weatherText,
             "updatedAt" to com.google.firebase.Timestamp.now()
-        )
-
-        db.collection("trips")
-            .document(tripId)
-            .update(weatherData as Map<String, Any>)
-            .addOnSuccessListener {
-                Log.d("WeatherActivity", "Weather data saved")
-            }
-            .addOnFailureListener { e ->
-                Log.e("WeatherActivity", "Error saving weather data", e)
-            }
+        ) as Map<String, Any>)
     }
 
     private fun loadWeatherData() {
-        db.collection("trips")
-            .document(tripId)
-            .get()
+        FirebaseFirestore.getInstance().getTripDocument(tripId).get()
             .addOnSuccessListener { document ->
-                val weatherCity = document.getString("weatherCity") ?: ""
-                val weatherInfo = document.getString("weatherInfo") ?: ""
-                
-                if (weatherCity.isNotEmpty()) {
-                    weatherCitySpinner.setText(weatherCity, false)
+                document.getString("weatherCity")?.takeIf { it.isNotEmpty() }?.let {
+                    weatherCitySpinner.setText(it, false)
                 }
-                if (weatherInfo.isNotEmpty()) {
-                    weatherTextView.text = weatherInfo
+                document.getString("weatherInfo")?.takeIf { it.isNotEmpty() }?.let {
+                    weatherTextView.text = it
                     weatherTextView.visibility = TextView.VISIBLE
                     weatherLoadingTextView.visibility = TextView.GONE
                 }
-            }
-            .addOnFailureListener { e ->
-                Log.e("WeatherActivity", "Error loading weather data", e)
             }
     }
 }

@@ -12,13 +12,14 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.textfield.TextInputEditText
+import com.example.travelbuddy.helpers.getTripDocument
+import com.example.travelbuddy.helpers.setupBackButton
 import com.google.android.material.textfield.TextInputLayout
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 
 class TripBudgetCalculatorActivity : BaseActivity() {
-    private lateinit var db: FirebaseFirestore
     private lateinit var tripId: String
     private var initialBudget: Int = 0
     private lateinit var budgetTextView: TextView
@@ -31,7 +32,6 @@ class TripBudgetCalculatorActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_trip_budget_calculator)
-        db = FirebaseFirestore.getInstance()
         tripId = intent.getStringExtra("trip_id") ?: ""
         initialBudget = intent.getIntExtra("trip_budget", 0)
 
@@ -52,7 +52,7 @@ class TripBudgetCalculatorActivity : BaseActivity() {
         expensesRecyclerView.layoutManager = LinearLayoutManager(this)
         expensesRecyclerView.adapter = expensesAdapter
 
-        findViewById<android.widget.ImageButton>(R.id.backButton).setOnClickListener { finish() }
+        setupBackButton()
         findViewById<Button>(R.id.addHotelButton).setOnClickListener { showAddExpenseDialog("Hotel/Apartament") }
         findViewById<Button>(R.id.addTransportButton).setOnClickListener { showAddExpenseDialog("Dojazd") }
         findViewById<Button>(R.id.addActivityButton).setOnClickListener { showAddExpenseDialog("Aktywność") }
@@ -66,7 +66,7 @@ class TripBudgetCalculatorActivity : BaseActivity() {
     override fun onResume() {
         super.onResume()
         // Załaduj aktualny budżet z Firebase
-        db.collection("trips").document(tripId).get().addOnSuccessListener {
+        FirebaseFirestore.getInstance().getTripDocument(tripId).get().addOnSuccessListener {
             initialBudget = (it.getLong("budget") ?: 0).toInt()
             budgetTextView.text = "Budżet: ${initialBudget} zł"
             // Załaduj wydatki ponownie, aby mieć aktualne dane
@@ -116,7 +116,7 @@ class TripBudgetCalculatorActivity : BaseActivity() {
 
     private fun addExpense(expense: Expense) {
         if (FirebaseAuth.getInstance().currentUser == null || tripId.isEmpty()) return
-        db.collection("trips").document(tripId).collection("expenses").add(hashMapOf(
+        FirebaseFirestore.getInstance().getTripDocument(tripId).collection("expenses").add(hashMapOf(
             "category" to expense.category,
             "name" to expense.name,
             "amount" to expense.amount,
@@ -148,7 +148,7 @@ class TripBudgetCalculatorActivity : BaseActivity() {
             updateRemainingBudgetInFirestore()
             return
         }
-        db.collection("trips").document(tripId).collection("expenses").document(expense.id).delete()
+        FirebaseFirestore.getInstance().getTripDocument(tripId).collection("expenses").document(expense.id).delete()
             .addOnSuccessListener {
                 val idx = expenses.indexOf(expense)
                 expenses.removeAt(idx)
@@ -175,7 +175,7 @@ class TripBudgetCalculatorActivity : BaseActivity() {
         val totalSpent = expenses.sumOf { it.amount }
         val remaining = initialBudget - totalSpent
         
-        db.collection("trips").document(tripId).update(
+        FirebaseFirestore.getInstance().getTripDocument(tripId).update(
             hashMapOf(
                 "remainingBudget" to remaining,
                 "totalSpent" to totalSpent,
@@ -190,7 +190,7 @@ class TripBudgetCalculatorActivity : BaseActivity() {
         if (tripId.isEmpty()) return
         
         // Spróbuj załadować z sortowaniem (najnowsze na górze)
-        db.collection("trips").document(tripId).collection("expenses")
+        FirebaseFirestore.getInstance().getTripDocument(tripId).collection("expenses")
             .orderBy("createdAt", Query.Direction.DESCENDING)
             .get()
             .addOnSuccessListener { docs ->
@@ -211,7 +211,7 @@ class TripBudgetCalculatorActivity : BaseActivity() {
             .addOnFailureListener { e ->
                 // Jeśli orderBy nie działa (brak indeksu), załaduj bez sortowania
                 android.util.Log.w("TripBudgetCalculator", "Error with orderBy, trying without sort", e)
-                db.collection("trips").document(tripId).collection("expenses")
+                FirebaseFirestore.getInstance().getTripDocument(tripId).collection("expenses")
                     .get()
                     .addOnSuccessListener { docs ->
                         expenses.clear()

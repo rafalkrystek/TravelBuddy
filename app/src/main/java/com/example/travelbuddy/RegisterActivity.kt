@@ -2,16 +2,16 @@ package com.example.travelbuddy
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Patterns
 import android.widget.CheckBox
 import android.widget.Toast
+import com.example.travelbuddy.helpers.FirebaseErrorHelper
+import com.example.travelbuddy.helpers.ValidationHelper
+import com.example.travelbuddy.helpers.setupBackButton
 import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseAuthException
 import com.google.firebase.auth.UserProfileChangeRequest
 
 class RegisterActivity : BaseActivity() {
-    private lateinit var auth: FirebaseAuth
     private lateinit var firstNameEditText: TextInputEditText
     private lateinit var lastNameEditText: TextInputEditText
     private lateinit var emailEditText: TextInputEditText
@@ -22,14 +22,13 @@ class RegisterActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_register)
-        auth = FirebaseAuth.getInstance()
         firstNameEditText = findViewById(R.id.firstNameEditText)
         lastNameEditText = findViewById(R.id.lastNameEditText)
         emailEditText = findViewById(R.id.emailEditText)
         passwordEditText = findViewById(R.id.passwordEditText)
         confirmPasswordEditText = findViewById(R.id.confirmPasswordEditText)
         termsCheckBox = findViewById(R.id.termsCheckBox)
-        findViewById<android.widget.ImageButton>(R.id.backButton).setOnClickListener { finish() }
+        setupBackButton()
         findViewById<android.widget.Button>(R.id.registerButton).setOnClickListener { performRegistration() }
         findViewById<android.widget.TextView>(R.id.signInText).setOnClickListener {
             startActivity(Intent(this, LoginActivity::class.java))
@@ -37,11 +36,11 @@ class RegisterActivity : BaseActivity() {
     }
 
     private fun performRegistration() {
-        val firstName = firstNameEditText.text.toString().trim()
-        val lastName = lastNameEditText.text.toString().trim()
-        val email = emailEditText.text.toString().trim()
-        val password = passwordEditText.text.toString().trim()
-        val confirmPassword = confirmPasswordEditText.text.toString().trim()
+        val firstName = firstNameEditText.text?.toString()?.trim() ?: ""
+        val lastName = lastNameEditText.text?.toString()?.trim() ?: ""
+        val email = emailEditText.text?.toString()?.trim() ?: ""
+        val password = passwordEditText.text?.toString()?.trim() ?: ""
+        val confirmPassword = confirmPasswordEditText.text?.toString()?.trim() ?: ""
 
         if (firstName.isEmpty()) {
             firstNameEditText.error = getString(R.string.first_name_required)
@@ -51,22 +50,8 @@ class RegisterActivity : BaseActivity() {
             lastNameEditText.error = getString(R.string.last_name_required)
             return
         }
-        if (email.isEmpty()) {
-            emailEditText.error = getString(R.string.email_required)
-            return
-        }
-        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            emailEditText.error = getString(R.string.invalid_email)
-            return
-        }
-        if (password.isEmpty()) {
-            passwordEditText.error = getString(R.string.password_required)
-            return
-        }
-        if (password.length < 6) {
-            passwordEditText.error = getString(R.string.password_min_length)
-            return
-        }
+        if (!ValidationHelper.validateEmail(email, emailEditText, this)) return
+        if (!ValidationHelper.validatePassword(password, passwordEditText, this)) return
         val passwordStrength = PasswordEncryption.validatePasswordStrength(password)
         if (passwordStrength == PasswordEncryption.PasswordStrength.WEAK) {
             passwordEditText.error = getString(R.string.password_too_weak)
@@ -80,26 +65,18 @@ class RegisterActivity : BaseActivity() {
             Toast.makeText(this, getString(R.string.accept_terms), Toast.LENGTH_SHORT).show()
             return
         }
-        val encryptedPrefs = PasswordEncryption.getEncryptedSharedPreferences(this)
-        encryptedPrefs.edit().putString("registered_email", email).apply()
-        auth.createUserWithEmailAndPassword(email, password).addOnCompleteListener { task ->
+        PasswordEncryption.getEncryptedSharedPreferences(this).edit().putString("registered_email", email).apply()
+        FirebaseAuth.getInstance().createUserWithEmailAndPassword(email, password).addOnCompleteListener { task ->
             if (task.isSuccessful) {
-                auth.currentUser?.updateProfile(
+                FirebaseAuth.getInstance().currentUser?.updateProfile(
                     UserProfileChangeRequest.Builder().setDisplayName("$firstName $lastName").build()
                 )
                 Toast.makeText(this, getString(R.string.registration_successful), Toast.LENGTH_SHORT).show()
                 startActivity(Intent(this, LoginActivity::class.java))
                 finish()
             } else {
-                val errorCode = (task.exception as? FirebaseAuthException)?.errorCode
-                val msg = when (errorCode) {
-                    "ERROR_WEAK_PASSWORD" -> getString(R.string.error_weak_password)
-                    "ERROR_INVALID_EMAIL" -> getString(R.string.error_invalid_email)
-                    "ERROR_EMAIL_ALREADY_IN_USE" -> getString(R.string.error_email_already_in_use)
-                    "ERROR_NETWORK_REQUEST_FAILED" -> getString(R.string.error_network)
-                    else -> getString(R.string.error_registration_failed)
-                }
-                Toast.makeText(this, msg, Toast.LENGTH_LONG).show()
+                Toast.makeText(this, FirebaseErrorHelper.getRegistrationErrorMessage(
+                    FirebaseErrorHelper.getErrorCode(task.exception), this), Toast.LENGTH_LONG).show()
             }
         }
     }

@@ -4,28 +4,23 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.Button
-import android.widget.ImageButton
 import android.widget.TextView
 import androidx.core.widget.NestedScrollView
 import android.widget.Toast
+import com.example.travelbuddy.helpers.DateHelper
+import com.example.travelbuddy.helpers.getTripDocument
+import com.example.travelbuddy.helpers.GeminiApiHelper
+import com.example.travelbuddy.helpers.setupBackButton
 import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import org.json.JSONObject
-import java.net.HttpURLConnection
-import java.net.URL
-import java.io.OutputStreamWriter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.text.SimpleDateFormat
-import java.util.*
 
 class ActivityPlannerActivity : BaseActivity() {
     
-    private lateinit var auth: FirebaseAuth
-    private lateinit var db: FirebaseFirestore
     private lateinit var tripId: String
     private lateinit var destination: String
     private var startDateTimestamp: Long = 0
@@ -65,8 +60,6 @@ class ActivityPlannerActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_activity_planner)
 
-        auth = FirebaseAuth.getInstance()
-        db = FirebaseFirestore.getInstance()
 
         tripId = intent.getStringExtra("trip_id") ?: ""
         destination = intent.getStringExtra("trip_destination") ?: ""
@@ -79,7 +72,6 @@ class ActivityPlannerActivity : BaseActivity() {
             return
         }
 
-        val backButton = findViewById<ImageButton>(R.id.backButton)
         val destinationTextView = findViewById<TextView>(R.id.destinationTextView)
         val dateRangeTextView = findViewById<TextView>(R.id.dateRangeTextView)
         userPreferencesEditText = findViewById(R.id.userPreferencesEditText)
@@ -105,21 +97,10 @@ class ActivityPlannerActivity : BaseActivity() {
         editSavedPlanButton = findViewById(R.id.editSavedPlanButton)
         deleteSavedPlanButton = findViewById(R.id.deleteSavedPlanButton)
         
-        try {
-            val dateFormatter = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
-            val startDateParsed = dateFormatter.parse(startDate)
-            val endDateParsed = dateFormatter.parse(endDate)
-            if (startDateParsed != null && endDateParsed != null) {
-                startDateTimestamp = startDateParsed.time
-                endDateTimestamp = endDateParsed.time
-            }
-        } catch (e: Exception) {
-            Log.e("ActivityPlannerActivity", "Error parsing dates", e)
-        }
-
-        backButton.setOnClickListener {
-            finish()
-        }
+        DateHelper.parseDate(startDate)?.let { startDateTimestamp = it.time }
+        DateHelper.parseDate(endDate)?.let { endDateTimestamp = it.time }
+        
+        setupBackButton()
 
         generatePlanButton.setOnClickListener {
             generateTravelPlan(isNewPlan = true)
@@ -189,9 +170,7 @@ class ActivityPlannerActivity : BaseActivity() {
         myPlanTextView.text = ""
         
         // Usuń plan z Firestore
-        db.collection("trips")
-            .document(tripId)
-            .update(
+        FirebaseFirestore.getInstance().getTripDocument(tripId).update(
                 mapOf(
                     "generatedPlan" to "",
                     "conversationHistory" to emptyList<String>(),
@@ -218,27 +197,20 @@ class ActivityPlannerActivity : BaseActivity() {
         
         CoroutineScope(Dispatchers.IO).launch {
             val apiKey = BuildConfig.GEMINI_API_KEY
-            
             try {
-                // Buduj prompt z pełnym kontekstem podróży
-                var prompt = buildSystemPrompt()
-                prompt += "\n\n=== KONTEKST MODYFIKACJI ===\n"
-                prompt += "Użytkownik wygenerował już plan podróży i chce go zmodyfikować.\n\n"
-                prompt += "OBECNY PLAN PODRÓŻY:\n"
-                prompt += "---\n$currentPlan\n---\n\n"
-                prompt += "PROŚBA UŻYTKOWNIKA O MODYFIKACJĘ:\n"
-                prompt += "$modifyRequest\n\n"
-                prompt += "INSTRUKCJE:\n"
-                prompt += "1. Zmodyfikuj plan według prośby użytkownika\n"
-                prompt += "2. Zachowaj resztę planu bez zmian, chyba że użytkownik prosi o więcej\n"
-                prompt += "3. Odpowiedz pełnym, zaktualizowanym planem podróży\n"
-                prompt += "4. Wszystkie propozycje muszą dotyczyć miejsca: ${getTripLocationString()}\n"
-                prompt += "5. Odpowiedz w języku polskim\n"
+                val prompt = buildSystemPrompt() + "\n\n=== KONTEKST MODYFIKACJI ===\n" +
+                    "Użytkownik wygenerował już plan podróży i chce go zmodyfikować.\n\n" +
+                    "OBECNY PLAN PODRÓŻY:\n---\n$currentPlan\n---\n\n" +
+                    "PROŚBA UŻYTKOWNIKA O MODYFIKACJĘ:\n$modifyRequest\n\n" +
+                    "INSTRUKCJE:\n1. Zmodyfikuj plan według prośby użytkownika\n" +
+                    "2. Zachowaj resztę planu bez zmian, chyba że użytkownik prosi o więcej\n" +
+                    "3. Odpowiedz pełnym, zaktualizowanym planem podróży\n" +
+                    "4. Wszystkie propozycje muszą dotyczyć miejsca: ${getTripLocationString()}\n" +
+                    "5. Odpowiedz w języku polskim\n"
                 
-                val generatedText = callGeminiAPI(apiKey, prompt)
+                val generatedText = GeminiApiHelper.generateContent(apiKey, prompt)
                 
                 if (generatedText != null) {
-                    // Dodaj do historii konwersacji
                     conversationHistory.add("Użytkownik: $modifyRequest")
                     conversationHistory.add("AI: [Zaktualizowany plan]")
                     currentPlan = generatedText
@@ -248,13 +220,9 @@ class ActivityPlannerActivity : BaseActivity() {
                         planLoadingTextView.visibility = View.GONE
                         modifyPlanButton.isEnabled = true
                         modifyPlanEditText.setText("")
-                        
-                        // Aktualizuj sekcję "Mój plan"
                         myPlanCard.visibility = View.VISIBLE
                         myPlanTextView.text = generatedText
                         planStatusTextView.text = "✓ Zaktualizowano"
-                        
-                        // Auto-zapisz zmodyfikowany plan
                         savePlanData(generatedText)
                         Toast.makeText(this@ActivityPlannerActivity, "Plan zmodyfikowany i zapisany!", Toast.LENGTH_SHORT).show()
                     }
@@ -282,26 +250,15 @@ class ActivityPlannerActivity : BaseActivity() {
         }
         
         val daysDiff = if (startDateTimestamp > 0 && endDateTimestamp > 0) {
-            ((endDateTimestamp - startDateTimestamp) / (1000 * 60 * 60 * 24)).toInt() + 1
+            DateHelper.calculateDays(startDateTimestamp, endDateTimestamp)
         } else {
             7
         }
         
-        val dateFormatter = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
-        val startDateFormatted = if (startDateTimestamp > 0) {
-            dateFormatter.format(Date(startDateTimestamp))
-        } else {
-            ""
-        }
-        val endDateFormatted = if (endDateTimestamp > 0) {
-            dateFormatter.format(Date(endDateTimestamp))
-        } else {
-            ""
-        }
+        val startDateFormatted = if (startDateTimestamp > 0) DateHelper.formatDate(startDateTimestamp) else ""
+        val endDateFormatted = if (endDateTimestamp > 0) DateHelper.formatDate(endDateTimestamp) else ""
         
-        db.collection("trips")
-            .document(tripId)
-            .get()
+        FirebaseFirestore.getInstance().getTripDocument(tripId).get()
             .addOnSuccessListener { document ->
                 val weatherCity = document.getString("weatherCity") ?: ""
                 val weatherInfo = document.getString("weatherInfo") ?: ""
@@ -313,18 +270,8 @@ class ActivityPlannerActivity : BaseActivity() {
                 CoroutineScope(Dispatchers.IO).launch {
                     val apiKey = BuildConfig.GEMINI_API_KEY
                     
-                    // DEBUG: Logowanie informacji o kluczu API
-                    Log.d("ActivityPlannerActivity", "=== DEBUG GEMINI API ===")
-                    Log.d("ActivityPlannerActivity", "API Key length: ${apiKey.length}")
-                    Log.d("ActivityPlannerActivity", "API Key first 10 chars: ${apiKey.take(10)}")
-                    Log.d("ActivityPlannerActivity", "API Key last 10 chars: ${apiKey.takeLast(10)}")
-                    Log.d("ActivityPlannerActivity", "API Key is empty: ${apiKey.isEmpty()}")
-                    Log.d("ActivityPlannerActivity", "API Key is default: ${apiKey == "YOUR_GEMINI_API_KEY"}")
-                    Log.d("ActivityPlannerActivity", "BuildConfig.GEMINI_API_KEY value: ${BuildConfig.GEMINI_API_KEY}")
-                    
                     try {
                         if (apiKey.isEmpty() || apiKey == "YOUR_GEMINI_API_KEY") {
-                            Log.e("ActivityPlannerActivity", "API Key is missing or default!")
                             withContext(Dispatchers.Main) {
                                 planLoadingTextView.visibility = View.GONE
                                 planScrollView.visibility = View.VISIBLE
@@ -334,284 +281,39 @@ class ActivityPlannerActivity : BaseActivity() {
                             return@launch
                         }
                         
-                        // Buduj prompt z pełnym kontekstem podróży
-                        var prompt = buildSystemPrompt()
-                        prompt += "\n\n=== SZCZEGÓŁY PODRÓŻY ===\n"
-                        prompt += "📍 LOKALIZACJA: ${getTripLocationString()}\n"
-                        if (tripCity.isNotEmpty()) {
-                            prompt += "- Miasto: $tripCity\n"
-                        }
-                        if (tripCountry.isNotEmpty()) {
-                            prompt += "- Kraj: $tripCountry\n"
-                        }
-                        if (weatherCity.isNotEmpty() && weatherCity != tripCity) {
-                            prompt += "- Miasto pogodowe: $weatherCity\n"
-                        }
-                        if (weatherInfo.isNotEmpty()) {
-                            prompt += "- Aktualna prognoza pogody:\n$weatherInfo\n"
-                        }
-                        prompt += "\n📅 DATY:\n"
-                        prompt += "- Data rozpoczęcia: $startDateFormatted\n"
-                        prompt += "- Data zakończenia: $endDateFormatted\n"
-                        prompt += "- Liczba dni: $daysDiff\n"
-                        if (tripBudget > 0) {
-                            prompt += "\n💰 BUDŻET: $tripBudget zł\n"
-                        }
-                        if (userPreferences.isNotEmpty()) {
-                            prompt += "\n👤 PREFERENCJE UŻYTKOWNIKA:\n$userPreferences\n"
-                        }
-                        prompt += "\n=== ZADANIE ===\n"
-                        prompt += "Stwórz szczegółowy plan podróży do ${getTripLocationString()} z podziałem na dni.\n"
-                        prompt += "Dla każdego dnia podaj:\n"
-                        prompt += "- Co zwiedzać (konkretne miejsca w ${tripCity.ifEmpty { destination }})\n"
-                        prompt += "- Gdzie jeść (lokalne restauracje i kuchnia ${tripCountry.ifEmpty { "lokalna" }})\n"
-                        prompt += "- Jakie aktywności wykonać\n"
-                        prompt += "- Praktyczne wskazówki dotyczące ${tripCity.ifEmpty { destination }}\n\n"
-                        prompt += "WAŻNE: Wszystkie propozycje MUSZĄ dotyczyć miejsca: ${getTripLocationString()}.\n"
-                        prompt += "Odpowiedz w języku polskim."
-                        
-                        // DEBUG: Logowanie promptu i konfiguracji
-                        Log.d("ActivityPlannerActivity", "Prompt length: ${prompt.length}")
-                        Log.d("ActivityPlannerActivity", "Prompt preview (first 200 chars): ${prompt.take(200)}")
-                        
-                        // Użyj bezpośredniego REST API do Gemini (omija problem z biblioteką i API v1)
-                        Log.d("ActivityPlannerActivity", "Using direct REST API call to Gemini")
-                        
-                        // Najpierw spróbuj sprawdzić dostępne modele przez ListModels
-                        var availableModels = mutableListOf<String>()
-                        try {
-                            Log.d("ActivityPlannerActivity", "Checking available models via ListModels API...")
-                            val listUrl = URL("https://generativelanguage.googleapis.com/v1beta/models?key=$apiKey")
-                            val listConnection = listUrl.openConnection() as HttpURLConnection
-                            listConnection.requestMethod = "GET"
-                            listConnection.connectTimeout = 10000
-                            listConnection.readTimeout = 10000
-                            
-                            val listResponseCode = listConnection.responseCode
-                            if (listResponseCode == 200) {
-                                val listResponse = listConnection.inputStream.bufferedReader().use { it.readText() }
-                                val listJson = JSONObject(listResponse)
-                                if (listJson.has("models")) {
-                                    val modelsArray = listJson.getJSONArray("models")
-                                    for (i in 0 until modelsArray.length()) {
-                                        val model = modelsArray.getJSONObject(i)
-                                        val modelName = model.getString("name")
-                                        // Usuń prefiks "models/"
-                                        val shortName = modelName.replace("models/", "")
-                                        availableModels.add(shortName)
-                                        Log.d("ActivityPlannerActivity", "Found available model: $shortName")
-                                    }
-                                }
-                            }
-                        } catch (e: Exception) {
-                            Log.w("ActivityPlannerActivity", "Could not list models: ${e.message}")
-                        }
-                        
-                        // Lista modeli do wypróbowania (używamy dostępnych modeli lub fallback)
-                        // WAŻNE: Stare modele (gemini-pro, gemini-1.5-*) nie istnieją!
-                        // Dostępne są tylko nowe modele Gemini 2.0 i 2.5
-                        val modelsToTry = if (availableModels.isNotEmpty()) {
-                            // Filtruj tylko modele obsługujące generateContent
-                            val generativeModels = availableModels.filter { model ->
-                                model.contains("gemini-2") || model.contains("gemini-flash") || model.contains("gemini-pro")
-                            }
-                            Log.d("ActivityPlannerActivity", "Using models from ListModels: $generativeModels")
-                            if (generativeModels.isNotEmpty()) generativeModels else listOf("gemini-2.0-flash")
-                        } else {
-                            Log.d("ActivityPlannerActivity", "ListModels failed, using fallback models")
-                            listOf(
-                                "gemini-2.0-flash",      // Najszybszy dostępny model
-                                "gemini-2.5-flash",      // Nowszy model
-                                "gemini-flash-latest",   // Najnowszy Flash
-                                "gemini-2.5-pro"         // Pro model
-                            )
-                        }
-                        
-                        var generatedText: String? = null
-                        var lastError: Exception? = null
-                        var successfulModel: String? = null
-                        
-                        // Próbuj każdy model aż jeden zadziała
-                        for (modelName in modelsToTry) {
-                            try {
-                                Log.d("ActivityPlannerActivity", "=== Trying model: $modelName ===")
-                                
-                                // URL dla Gemini API - próbuj najpierw v1 (starsze API), potem v1beta
-                                val apiVersions = listOf("v1", "v1beta")
-                                var modelSuccess = false
-                                
-                                for (apiVersion in apiVersions) {
-                                    try {
-                                        Log.d("ActivityPlannerActivity", "Trying API version: $apiVersion for model: $modelName")
-                                        
-                                        val url = URL("https://generativelanguage.googleapis.com/$apiVersion/models/$modelName:generateContent?key=$apiKey")
-                                        
-                                        Log.d("ActivityPlannerActivity", "Calling Gemini API: $url")
-                                        
-                                        val connection = url.openConnection() as HttpURLConnection
-                                        connection.requestMethod = "POST"
-                                        connection.setRequestProperty("Content-Type", "application/json")
-                                        connection.doOutput = true
-                                        connection.connectTimeout = 30000
-                                        connection.readTimeout = 30000
-                                        
-                                        // Przygotuj body request (poprawna struktura dla Gemini API)
-                                        val requestBody = JSONObject().apply {
-                                            put("contents", org.json.JSONArray().apply {
-                                                put(JSONObject().apply {
-                                                    put("parts", org.json.JSONArray().apply {
-                                                        put(JSONObject().apply {
-                                                            put("text", prompt)
-                                                        })
-                                                    })
-                                                })
-                                            })
-                                            put("generationConfig", JSONObject().apply {
-                                                put("temperature", 0.7)
-                                                put("topK", 40)
-                                                put("topP", 0.95)
-                                                put("maxOutputTokens", 2048)
-                                            })
-                                        }
-                                        
-                                        // Wyślij request
-                                        OutputStreamWriter(connection.outputStream).use { writer ->
-                                            writer.write(requestBody.toString())
-                                            writer.flush()
-                                        }
-                                        
-                                        val responseCode = connection.responseCode
-                                        Log.d("ActivityPlannerActivity", "Response code: $responseCode for $apiVersion/$modelName")
-                                        
-                                        if (responseCode == 200) {
-                                            val response = connection.inputStream.bufferedReader().use { it.readText() }
-                                            val jsonResponse = JSONObject(response)
-                                            
-                                            Log.d("ActivityPlannerActivity", "Response received successfully")
-                                            
-                                            // Parsuj odpowiedź
-                                            val candidates = jsonResponse.getJSONArray("candidates")
-                                            if (candidates.length() > 0) {
-                                                val candidate = candidates.getJSONObject(0)
-                                                val content = candidate.getJSONObject("content")
-                                                val parts = content.getJSONArray("parts")
-                                                if (parts.length() > 0) {
-                                                    val part = parts.getJSONObject(0)
-                                                    generatedText = part.getString("text")
-                                                    successfulModel = "$modelName ($apiVersion)"
-                                                    modelSuccess = true
-                                                    
-                                                    Log.d("ActivityPlannerActivity", "SUCCESS! Model $modelName with API $apiVersion worked!")
-                                                    Log.d("ActivityPlannerActivity", "Response text length: ${generatedText?.length ?: 0}")
-                                                    Log.d("ActivityPlannerActivity", "Generated text preview: ${generatedText?.take(200)}")
-                                                    
-                                                    break // Sukces - przerwij pętlę wersji API
-                                                }
-                                            }
-                                            
-                                            if (generatedText == null) {
-                                                throw Exception("No text in response: $response")
-                                            }
-                                        } else {
-                                            val errorResponse = connection.errorStream?.bufferedReader()?.use { it.readText() } ?: "No error message"
-                                            Log.w("ActivityPlannerActivity", "API $apiVersion error $responseCode: $errorResponse")
-                                            // Jeśli to nie ostatnia wersja API, spróbuj następnej
-                                            if (apiVersion != apiVersions.last()) {
-                                                continue
-                                            }
-                                            throw Exception("API error $responseCode: $errorResponse")
-                                        }
-                                    } catch (e: Exception) {
-                                        Log.w("ActivityPlannerActivity", "API version $apiVersion failed: ${e.message}")
-                                        // Jeśli to nie ostatnia wersja API, spróbuj następnej
-                                        if (apiVersion == apiVersions.last()) {
-                                            throw e
-                                        }
-                                        continue
-                                    }
-                                }
-                                
-                                if (modelSuccess) {
-                                    break // Sukces - przerwij pętlę modeli
-                                }
-                            } catch (e: Exception) {
-                                val errorMsg = "Model '$modelName' failed: ${e.message} (${e.javaClass.simpleName})"
-                                Log.w("ActivityPlannerActivity", errorMsg)
-                                Log.w("ActivityPlannerActivity", "Error type: ${e.javaClass.name}")
-                                lastError = e
-                                // Kontynuuj do następnego modelu
-                            }
-                        }
-                        
-                        if (generatedText == null || successfulModel == null) {
-                            Log.e("ActivityPlannerActivity", "=== ALL MODELS FAILED ===")
-                            throw lastError ?: Exception("Wszystkie modele nie powiodły się. Próbowano: ${modelsToTry.joinToString(", ")}")
-                        }
-                        
-                        Log.d("ActivityPlannerActivity", "Successfully used model: $successfulModel")
-                        
-                        val finalText = generatedText ?: "Błąd: Nie udało się wygenerować planu"
+                        val prompt = buildPrompt(weatherCity, weatherInfo, startDateFormatted, endDateFormatted, daysDiff, userPreferences)
+                        val generatedText = GeminiApiHelper.generateContent(apiKey, prompt)
                         
                         withContext(Dispatchers.Main) {
                             planLoadingTextView.visibility = View.GONE
                             generatePlanButton.isEnabled = true
                             
-                            // Zapisz plan i pokaż sekcję modyfikacji
-                            currentPlan = finalText
+                            if (generatedText != null) {
+                                currentPlan = generatedText
                             isPlanSaved = true
                             conversationHistory.clear()
                             conversationHistory.add("Wygenerowano nowy plan podróży")
                             
-                            // Pokaż plan w sekcji "Mój plan"
                             myPlanCard.visibility = View.VISIBLE
-                            myPlanTextView.text = finalText
+                                myPlanTextView.text = generatedText
                             planStatusTextView.text = "✓ Zapisano"
-                            
-                            // Ukryj główny scroll (plan jest w "Mój plan")
                             planScrollView.visibility = View.GONE
                             generatedPlanTextView.text = ""
-                            
-                            // Pokaż sekcję modyfikacji
                             modifyPlanSection.visibility = View.VISIBLE
                             
-                            savePlanData(finalText)
+                                savePlanData(generatedText)
                             Toast.makeText(this@ActivityPlannerActivity, "Plan wygenerowany i zapisany!", Toast.LENGTH_SHORT).show()
+                            } else {
+                                planScrollView.visibility = View.VISIBLE
+                                generatedPlanTextView.text = "Błąd: Nie udało się wygenerować planu. Sprawdź klucz API."
+                            }
                         }
                     } catch (e: Exception) {
-                        // DEBUG: Szczegółowe logowanie błędu
-                        Log.e("ActivityPlannerActivity", "=== ERROR DEBUG ===")
-                        Log.e("ActivityPlannerActivity", "Error class: ${e.javaClass.name}")
-                        Log.e("ActivityPlannerActivity", "Error message: ${e.message}")
-                        Log.e("ActivityPlannerActivity", "Error cause: ${e.cause?.message}")
-                        Log.e("ActivityPlannerActivity", "Full stack trace:")
-                        e.printStackTrace()
-                        Log.e("ActivityPlannerActivity", "API Key used (first 10): ${apiKey.take(10)}...")
-                        Log.e("ActivityPlannerActivity", "API Key used (last 10): ...${apiKey.takeLast(10)}")
-                        Log.e("ActivityPlannerActivity", "Model name used: gemini-1.5-pro")
-                        
-                        // Sprawdź czy błąd dotyczy modelu
-                        val errorMessage = e.message ?: ""
-                        if (errorMessage.contains("not found") || errorMessage.contains("not supported")) {
-                            Log.e("ActivityPlannerActivity", "Model error detected - trying alternative models")
-                            // Spróbuj alternatywnych nazw modeli
-                            val alternativeModels = listOf("gemini-pro", "gemini-1.5-flash", "gemini-1.0-pro")
-                            Log.d("ActivityPlannerActivity", "Available alternative models: $alternativeModels")
-                        }
-                        
+                        Log.e("ActivityPlannerActivity", "Error generating plan", e)
                         withContext(Dispatchers.Main) {
                             planLoadingTextView.visibility = View.GONE
                             planScrollView.visibility = View.VISIBLE
-                            val errorDetails = when {
-                                e.message?.contains("403") == true || e.message?.contains("PERMISSION_DENIED") == true -> 
-                                    "Błąd 403: Brak uprawnień.\n\nSprawdź:\n1. Włącz 'Generative Language API' w Google Cloud Console\n2. Sprawdź ograniczenia klucza API\n3. Upewnij się, że billing jest włączony\n\nSzczegóły: ${e.message}\n\nDEBUG: Klucz API (pierwsze 10 znaków): ${apiKey.take(10)}..."
-                                e.message?.contains("401") == true || e.message?.contains("UNAUTHENTICATED") == true ->
-                                    "Błąd 401: Nieprawidłowy klucz API.\n\nSprawdź:\n1. Czy klucz API jest poprawny\n2. Czy klucz ma uprawnienia do Generative Language API\n\nSzczegóły: ${e.message}\n\nDEBUG: Klucz API (pierwsze 10 znaków): ${apiKey.take(10)}..."
-                                e.message?.contains("not found") == true || e.message?.contains("not supported") == true ->
-                                    "Błąd: Żaden model nie jest dostępny.\n\nSzczegóły: ${e.message}\n\n⚠️ PROBLEM: Wszystkie żądania kończą się błędem (100% błędów w Google Cloud Console).\n\n🔍 DIAGNOZA:\n1. Otwórz Google Cloud Console:\n   https://console.cloud.google.com/\n\n2. Przejdź do: APIs & Services → Dashboard\n\n3. Kliknij na \"Generative Language API\" w tabeli\n\n4. Sprawdź zakładkę \"Errors\" - zobaczysz szczegóły błędów\n\n5. Sprawdź zakładkę \"Logs\" - zobaczysz dokładne komunikaty błędów\n\n🔧 MOŻLIWE ROZWIĄZANIA:\n\nA) Sprawdź szczegóły błędów:\n   - W Google Cloud Console zobaczysz dokładny komunikat błędu\n   - Może być: \"Model not found\", \"Permission denied\", \"Quota exceeded\"\n\nB) Sprawdź uprawnienia klucza API:\n   - APIs & Services → Credentials\n   - Otwórz swój klucz API\n   - W sekcji \"API restrictions\":\n     • Wybierz \"Don't restrict key\" LUB\n     • Jeśli \"Restrict key\", upewnij się że \"Generative Language API\" jest zaznaczone\n\nC) Sprawdź czy billing jest zsynchronizowany:\n   - Czasami po podpięciu billing trzeba odczekać 5-10 minut\n   - Sprawdź czy projekt ma przypisane konto rozliczeniowe\n\nD) Spróbuj wygenerować nowy klucz API:\n   - APIs & Services → Credentials → Create Credentials → API Key\n   - Upewnij się że ma dostęp do Generative Language API\n\nDEBUG:\n- Klucz API (pierwsze 10 znaków): ${apiKey.take(10)}...\n- Długość klucza: ${apiKey.length}\n- Próbowano kilku modeli - wszystkie niepowodzenie\n- Sprawdź Logcat i Google Cloud Console Logs dla szczegółów"
-                                else ->
-                                    "Błąd podczas generowania planu: ${e.message}\n\nSprawdź:\n1. Czy Generative Language API jest włączone w Google Cloud Console\n2. Czy klucz API jest poprawny\n3. Czy masz dostęp do internetu\n4. Czy billing jest włączony\n\nDEBUG:\n- Klucz API (pierwsze 10 znaków): ${apiKey.take(10)}...\n- Długość klucza: ${apiKey.length}\n- Model: gemini-1.5-pro\n- Błąd: ${e.javaClass.simpleName}"
-                            }
-                            generatedPlanTextView.text = errorDetails
+                            generatedPlanTextView.text = GeminiApiHelper.getErrorMessage(e, apiKey)
                             generatePlanButton.isEnabled = true
                         }
                     }
@@ -622,97 +324,41 @@ class ActivityPlannerActivity : BaseActivity() {
             }
     }
 
-    private suspend fun callGeminiAPI(apiKey: String, prompt: String): String? {
-        // Najpierw pobierz listę dostępnych modeli
-        var availableModels = mutableListOf<String>()
-        try {
-            val listUrl = URL("https://generativelanguage.googleapis.com/v1beta/models?key=$apiKey")
-            val listConnection = listUrl.openConnection() as HttpURLConnection
-            listConnection.requestMethod = "GET"
-            listConnection.connectTimeout = 10000
-            listConnection.readTimeout = 10000
-            
-            val listResponseCode = listConnection.responseCode
-            if (listResponseCode == 200) {
-                val listResponse = listConnection.inputStream.bufferedReader().use { it.readText() }
-                val listJson = JSONObject(listResponse)
-                if (listJson.has("models")) {
-                    val modelsArray = listJson.getJSONArray("models")
-                    for (i in 0 until modelsArray.length()) {
-                        val model = modelsArray.getJSONObject(i)
-                        val modelName = model.getString("name").replace("models/", "")
-                        availableModels.add(modelName)
-                    }
-                }
-            }
-        } catch (e: Exception) {
-            Log.w("ActivityPlannerActivity", "Could not list models: ${e.message}")
-        }
-        
-        val modelsToTry = if (availableModels.isNotEmpty()) {
-            availableModels.filter { model ->
-                model.contains("gemini-2") || model.contains("gemini-flash") || model.contains("gemini-pro")
-            }.ifEmpty { listOf("gemini-2.0-flash") }
-        } else {
-            listOf("gemini-2.0-flash", "gemini-2.5-flash", "gemini-flash-latest", "gemini-2.5-pro")
-        }
-        
-        for (modelName in modelsToTry) {
-            for (apiVersion in listOf("v1", "v1beta")) {
-                try {
-                    val url = URL("https://generativelanguage.googleapis.com/$apiVersion/models/$modelName:generateContent?key=$apiKey")
-                    val connection = url.openConnection() as HttpURLConnection
-                    connection.requestMethod = "POST"
-                    connection.setRequestProperty("Content-Type", "application/json")
-                    connection.doOutput = true
-                    connection.connectTimeout = 30000
-                    connection.readTimeout = 30000
-                    
-                    val requestBody = JSONObject().apply {
-                        put("contents", org.json.JSONArray().apply {
-                            put(JSONObject().apply {
-                                put("parts", org.json.JSONArray().apply {
-                                    put(JSONObject().apply {
-                                        put("text", prompt)
-                                    })
-                                })
-                            })
-                        })
-                        put("generationConfig", JSONObject().apply {
-                            put("temperature", 0.7)
-                            put("topK", 40)
-                            put("topP", 0.95)
-                            put("maxOutputTokens", 4096)
-                        })
-                    }
-                    
-                    OutputStreamWriter(connection.outputStream).use { writer ->
-                        writer.write(requestBody.toString())
-                        writer.flush()
-                    }
-                    
-                    if (connection.responseCode == 200) {
-                        val response = connection.inputStream.bufferedReader().use { it.readText() }
-                        val jsonResponse = JSONObject(response)
-                        val candidates = jsonResponse.getJSONArray("candidates")
-                        if (candidates.length() > 0) {
-                            val content = candidates.getJSONObject(0).getJSONObject("content")
-                            val parts = content.getJSONArray("parts")
-                            if (parts.length() > 0) {
-                                return parts.getJSONObject(0).getString("text")
-                            }
-                        }
-                    }
-                } catch (e: Exception) {
-                    Log.w("ActivityPlannerActivity", "Model $modelName ($apiVersion) failed: ${e.message}")
-                }
-            }
-        }
-        return null
+    private fun buildPrompt(
+        weatherCity: String,
+        weatherInfo: String,
+        startDateFormatted: String,
+        endDateFormatted: String,
+        daysDiff: Int,
+        userPreferences: String
+    ): String {
+        var prompt = buildSystemPrompt()
+        prompt += "\n\n=== SZCZEGÓŁY PODRÓŻY ===\n"
+        prompt += "📍 LOKALIZACJA: ${getTripLocationString()}\n"
+        if (tripCity.isNotEmpty()) prompt += "- Miasto: $tripCity\n"
+        if (tripCountry.isNotEmpty()) prompt += "- Kraj: $tripCountry\n"
+        if (weatherCity.isNotEmpty() && weatherCity != tripCity) prompt += "- Miasto pogodowe: $weatherCity\n"
+        if (weatherInfo.isNotEmpty()) prompt += "- Aktualna prognoza pogody:\n$weatherInfo\n"
+        prompt += "\n📅 DATY:\n"
+        prompt += "- Data rozpoczęcia: $startDateFormatted\n"
+        prompt += "- Data zakończenia: $endDateFormatted\n"
+        prompt += "- Liczba dni: $daysDiff\n"
+        if (tripBudget > 0) prompt += "\n💰 BUDŻET: $tripBudget zł\n"
+        if (userPreferences.isNotEmpty()) prompt += "\n👤 PREFERENCJE UŻYTKOWNIKA:\n$userPreferences\n"
+        prompt += "\n=== ZADANIE ===\n"
+        prompt += "Stwórz szczegółowy plan podróży do ${getTripLocationString()} z podziałem na dni.\n"
+        prompt += "Dla każdego dnia podaj:\n"
+        prompt += "- Co zwiedzać (konkretne miejsca w ${tripCity.ifEmpty { destination }})\n"
+        prompt += "- Gdzie jeść (lokalne restauracje i kuchnia ${tripCountry.ifEmpty { "lokalna" }})\n"
+        prompt += "- Jakie aktywności wykonać\n"
+        prompt += "- Praktyczne wskazówki dotyczące ${tripCity.ifEmpty { destination }}\n\n"
+        prompt += "WAŻNE: Wszystkie propozycje MUSZĄ dotyczyć miejsca: ${getTripLocationString()}.\n"
+        prompt += "Odpowiedz w języku polskim."
+        return prompt
     }
 
     private fun savePlanData(planText: String) {
-        val user = auth.currentUser
+        val user = FirebaseAuth.getInstance().currentUser
         if (user == null) return
 
         val planData = hashMapOf(
@@ -722,9 +368,7 @@ class ActivityPlannerActivity : BaseActivity() {
             "updatedAt" to com.google.firebase.Timestamp.now()
         )
 
-        db.collection("trips")
-            .document(tripId)
-            .update(planData as Map<String, Any>)
+        FirebaseFirestore.getInstance().getTripDocument(tripId).update(planData as Map<String, Any>)
             .addOnSuccessListener {
                 Log.d("ActivityPlannerActivity", "Plan data saved")
             }
@@ -734,7 +378,7 @@ class ActivityPlannerActivity : BaseActivity() {
     }
 
     private fun loadTripData() {
-        db.collection("trips")
+        FirebaseFirestore.getInstance().collection("trips")
             .document(tripId)
             .get()
             .addOnSuccessListener { document ->
@@ -826,16 +470,14 @@ class ActivityPlannerActivity : BaseActivity() {
             sb.append("📍 CEL PODRÓŻY: $destination\n")
         }
         
-        val dateFormatter = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
         if (startDateTimestamp > 0) {
-            sb.append("📅 DATA ROZPOCZĘCIA: ${dateFormatter.format(Date(startDateTimestamp))}\n")
+            sb.append("📅 DATA ROZPOCZĘCIA: ${DateHelper.formatDate(startDateTimestamp)}\n")
         }
         if (endDateTimestamp > 0) {
-            sb.append("📅 DATA ZAKOŃCZENIA: ${dateFormatter.format(Date(endDateTimestamp))}\n")
+            sb.append("📅 DATA ZAKOŃCZENIA: ${DateHelper.formatDate(endDateTimestamp)}\n")
         }
         if (startDateTimestamp > 0 && endDateTimestamp > 0) {
-            val days = ((endDateTimestamp - startDateTimestamp) / (1000 * 60 * 60 * 24)).toInt() + 1
-            sb.append("⏱️ DŁUGOŚĆ PODRÓŻY: $days dni\n")
+            sb.append("⏱️ DŁUGOŚĆ PODRÓŻY: ${DateHelper.calculateDays(startDateTimestamp, endDateTimestamp)} dni\n")
         }
         if (tripBudget > 0) {
             sb.append("💰 BUDŻET: $tripBudget zł\n")

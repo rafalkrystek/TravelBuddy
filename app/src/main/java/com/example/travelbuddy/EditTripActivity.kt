@@ -12,14 +12,15 @@ import com.google.android.material.slider.Slider
 import com.google.android.material.textfield.MaterialAutoCompleteTextView
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
+import com.example.travelbuddy.helpers.DateHelper
+import com.example.travelbuddy.helpers.DropdownHelper
+import com.example.travelbuddy.helpers.getTripDocument
+import com.example.travelbuddy.helpers.FormatHelper
+import com.example.travelbuddy.helpers.setupBackButton
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import java.text.SimpleDateFormat
-import java.util.*
 
 class EditTripActivity : BaseActivity() {
-    private lateinit var auth: FirebaseAuth
-    private lateinit var db: FirebaseFirestore
     private lateinit var tripId: String
     private var selectedStartDate: Long? = null
     private var selectedEndDate: Long? = null
@@ -34,11 +35,9 @@ class EditTripActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_plan_trip)
-        auth = FirebaseAuth.getInstance()
-        db = FirebaseFirestore.getInstance()
         tripId = intent.getStringExtra("trip_id") ?: ""
 
-        if (tripId.isEmpty() || auth.currentUser == null) {
+        if (tripId.isEmpty() || FirebaseAuth.getInstance().currentUser == null) {
             Toast.makeText(this, "Błąd", Toast.LENGTH_SHORT).show()
             finish()
             return
@@ -57,131 +56,89 @@ class EditTripActivity : BaseActivity() {
         val currentEndDate = intent.getStringExtra("trip_end_date") ?: ""
         val currentBudget = intent.getIntExtra("trip_budget", 0)
 
-        // Parsuj destination - może być w formacie "Miasto, Kraj" lub sam kraj
-        parseDestination(currentDestination)
+        val (city, country) = DestinationParser.parseDestination(currentDestination)
+        selectedCity = city
+        selectedCountry = country
         
         dateRangeEditText.setText("$currentStartDate - $currentEndDate")
         budgetSlider.value = currentBudget.toFloat()
         budgetValueTextView.text = "$currentBudget zł"
 
-        try {
-            val df = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
-            df.parse(currentStartDate)?.let { selectedStartDate = it.time }
-            df.parse(currentEndDate)?.let { selectedEndDate = it.time }
-        } catch (e: Exception) {}
+        DateHelper.parseDate(currentStartDate)?.let { selectedStartDate = it.time }
+        DateHelper.parseDate(currentEndDate)?.let { selectedEndDate = it.time }
 
         setupCountryDropdown()
         setupCityDropdown()
 
-        val dateFormatter = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
         dateRangeEditText.setOnClickListener {
-            val picker = MaterialDatePicker.Builder.dateRangePicker()
+            MaterialDatePicker.Builder.dateRangePicker()
                 .setTitleText("Wybierz daty")
                 .setCalendarConstraints(CalendarConstraints.Builder()
                     .setValidator(DateValidatorPointForward.from(MaterialDatePicker.todayInUtcMilliseconds()))
                     .build())
                 .build()
-            picker.addOnPositiveButtonClickListener {
-                selectedStartDate = it.first
-                selectedEndDate = it.second
-                dateRangeEditText.setText("${dateFormatter.format(Date(selectedStartDate!!))} - ${dateFormatter.format(Date(selectedEndDate!!))}")
-            }
-            picker.show(supportFragmentManager, "DATE_PICKER")
+                .apply {
+                    addOnPositiveButtonClickListener {
+                        selectedStartDate = it.first
+                        selectedEndDate = it.second
+                        dateRangeEditText.setText("${DateHelper.formatDate(it.first)} - ${DateHelper.formatDate(it.second)}")
+                    }
+                    show(supportFragmentManager, "DATE_PICKER")
+                }
         }
 
-        budgetSlider.addOnChangeListener { _, value, _ -> budgetValueTextView.text = "${value.toInt()} zł" }
-        findViewById<android.widget.ImageButton>(R.id.backButton).setOnClickListener { finish() }
-
+        budgetValueTextView.text = FormatHelper.formatBudget(budgetSlider.value.toInt())
+        budgetSlider.addOnChangeListener { _, value, _ -> budgetValueTextView.text = FormatHelper.formatBudget(value.toInt()) }
+        setupBackButton()
         createTripButton.text = "Zapisz zmiany"
         createTripButton.setOnClickListener {
-            selectedCountry = countryEditText.text.toString().trim()
-            selectedCity = cityEditText.text.toString().trim()
+            val country = countryEditText.text?.toString()?.trim() ?: ""
+            val city = cityEditText.text?.toString()?.trim() ?: ""
             val budget = budgetSlider.value.toInt()
             
-            when {
-                selectedCountry.isEmpty() -> Toast.makeText(this, "Wybierz kraj", Toast.LENGTH_LONG).show()
-                selectedCity.isEmpty() -> Toast.makeText(this, "Wybierz miasto", Toast.LENGTH_LONG).show()
-                selectedStartDate == null || selectedEndDate == null -> Toast.makeText(this, "Wybierz daty", Toast.LENGTH_LONG).show()
-                budget <= 0 -> Toast.makeText(this, "Wybierz budżet", Toast.LENGTH_LONG).show()
-                else -> updateTrip(selectedCountry, selectedCity, selectedStartDate!!, selectedEndDate!!, budget)
+            val (isValid, errorMessage) = TripFormValidator.validateTripForm(
+                country, city, selectedStartDate, selectedEndDate, budget
+            )
+            
+            if (isValid) {
+                updateTrip(country, city, selectedStartDate!!, selectedEndDate!!, budget)
+            } else {
+                Toast.makeText(this, errorMessage, Toast.LENGTH_LONG).show()
             }
-        }
-    }
-    
-    private fun parseDestination(destination: String) {
-        if (destination.contains(",")) {
-            val parts = destination.split(",").map { it.trim() }
-            if (parts.size >= 2) {
-                selectedCity = parts[0]
-                selectedCountry = parts[1]
-            }
-        } else {
-            // Stary format - destination to sam kraj
-            selectedCountry = destination
-            selectedCity = ""
         }
     }
     
     private fun setupCountryDropdown() {
-        val countriesWithCities = CountryCitiesData.getCountriesWithCities()
-        val countriesAdapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, countriesWithCities)
-        countryEditText.setAdapter(countriesAdapter)
+        countryEditText.setAdapter(ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line,
+            CountryCitiesData.getCountriesWithCities()))
         countryEditText.threshold = 1
         
-        // Ustaw aktualny kraj
         if (selectedCountry.isNotEmpty()) {
             countryEditText.setText(selectedCountry, false)
             updateCitiesForCountry(selectedCountry)
         }
         
-        countryEditText.setOnClickListener {
-            countryEditText.showDropDown()
-        }
-        
-        countryEditText.setOnFocusChangeListener { _, hasFocus ->
-            if (hasFocus) {
-                countryEditText.showDropDown()
-            }
-        }
-        
-        countryEditText.setOnItemClickListener { _, _, _, _ ->
-            val country = countryEditText.text.toString()
-            selectedCountry = country
-            updateCitiesForCountry(country)
+        DropdownHelper.setupDropdownListeners(countryEditText) {
+            selectedCountry = countryEditText.text.toString()
+            updateCitiesForCountry(selectedCountry)
         }
     }
     
     private fun setupCityDropdown() {
-        cityEditText.setOnClickListener {
-            if (cityEditText.isEnabled) {
-                cityEditText.showDropDown()
-            }
-        }
-        
-        cityEditText.setOnFocusChangeListener { _, hasFocus ->
-            if (hasFocus && cityEditText.isEnabled) {
-                cityEditText.showDropDown()
-            }
-        }
-        
-        cityEditText.setOnItemClickListener { _, _, _, _ ->
+        DropdownHelper.setupDropdownListeners(cityEditText, checkEnabled = true) {
             selectedCity = cityEditText.text.toString()
         }
     }
     
     private fun updateCitiesForCountry(country: String) {
         val cities = CountryCitiesData.getCitiesForCountry(country)
+        cityInputLayout.isEnabled = true
+        cityEditText.isEnabled = true
+        cityInputLayout.hint = if (cities.isNotEmpty()) "Wybierz miasto" else "Wpisz miasto"
         
         if (cities.isNotEmpty()) {
-            cityInputLayout.isEnabled = true
-            cityEditText.isEnabled = true
-            cityInputLayout.hint = "Wybierz miasto"
-            
-            val citiesAdapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, cities)
-            cityEditText.setAdapter(citiesAdapter)
+            cityEditText.setAdapter(ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, cities))
             cityEditText.threshold = 1
-            
-            // Ustaw aktualne miasto jeśli jest na liście
             if (selectedCity.isNotEmpty() && cities.contains(selectedCity)) {
                 cityEditText.setText(selectedCity, false)
             } else {
@@ -189,36 +146,47 @@ class EditTripActivity : BaseActivity() {
                 selectedCity = ""
             }
         } else {
-            cityInputLayout.isEnabled = true
-            cityEditText.isEnabled = true
-            cityInputLayout.hint = "Wpisz miasto"
             cityEditText.setAdapter(null)
-            
-            if (selectedCity.isNotEmpty()) {
-                cityEditText.setText(selectedCity, false)
-            }
+            if (selectedCity.isNotEmpty()) cityEditText.setText(selectedCity, false)
         }
     }
 
     private fun updateTrip(country: String, city: String, startDate: Long, endDate: Long, budget: Int) {
-        val dateFormatter = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
-        val destination = "$city, $country"
+        val user = FirebaseAuth.getInstance().currentUser
+        if (user == null) {
+            Toast.makeText(this, "Błąd: Nie jesteś zalogowany", Toast.LENGTH_SHORT).show()
+            return
+        }
         
-        db.collection("trips").document(tripId).update(hashMapOf(
-            "destination" to destination,
+        // Sprawdź ownership przed aktualizacją (dodatkowa warstwa bezpieczeństwa)
+        FirebaseFirestore.getInstance().getTripDocument(tripId).get()
+            .addOnSuccessListener { document ->
+                val tripUserId = document.getString("userId") ?: ""
+                if (tripUserId != user.uid) {
+                    Toast.makeText(this, "Brak uprawnień", Toast.LENGTH_SHORT).show()
+                    return@addOnSuccessListener
+                }
+                
+                // Wykonaj aktualizację tylko jeśli użytkownik jest właścicielem
+                FirebaseFirestore.getInstance().getTripDocument(tripId).update(hashMapOf(
+            "destination" to DestinationParser.createDestination(city, country),
             "country" to country,
             "city" to city,
-            "startDate" to dateFormatter.format(Date(startDate)),
-            "endDate" to dateFormatter.format(Date(endDate)),
+            "startDate" to DateHelper.formatDate(startDate),
+            "endDate" to DateHelper.formatDate(endDate),
             "startDateTimestamp" to startDate,
             "endDateTimestamp" to endDate,
-            "budget" to budget,
-            "updatedAt" to com.google.firebase.Timestamp.now()
-        ) as Map<String, Any>).addOnSuccessListener {
-            Toast.makeText(this, "Zaktualizowano", Toast.LENGTH_LONG).show()
-            android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({ finish() }, 1500)
-        }.addOnFailureListener {
-            Toast.makeText(this, "Błąd: ${it.message}", Toast.LENGTH_LONG).show()
-        }
+                    "budget" to budget,
+                    "updatedAt" to com.google.firebase.Timestamp.now()
+                ) as Map<String, Any>).addOnSuccessListener {
+                    Toast.makeText(this, "Zaktualizowano", Toast.LENGTH_LONG).show()
+                    cityEditText.postDelayed({ finish() }, 1500)
+                }.addOnFailureListener {
+                    Toast.makeText(this, "Błąd: ${it.message}", Toast.LENGTH_LONG).show()
+                }
+            }
+            .addOnFailureListener {
+                Toast.makeText(this, "Błąd: ${it.message}", Toast.LENGTH_LONG).show()
+            }
     }
 }

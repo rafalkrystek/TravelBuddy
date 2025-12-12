@@ -104,6 +104,9 @@ dependencies {
     testImplementation(libs.junit)
     // JSON library for unit tests (org.json.JSONObject is Android-only)
     testImplementation("org.json:json:20240303")
+    // Mockito for mocking in unit tests
+    testImplementation("org.mockito:mockito-core:5.1.1")
+    testImplementation("org.mockito:mockito-inline:5.1.1")
     
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

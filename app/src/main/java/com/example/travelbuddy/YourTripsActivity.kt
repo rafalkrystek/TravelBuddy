@@ -10,13 +10,14 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.travelbuddy.helpers.getTripDocument
+import com.example.travelbuddy.helpers.putTripExtras
+import com.example.travelbuddy.helpers.setupBackButton
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 
 class YourTripsActivity : BaseActivity() {
-    private lateinit var auth: FirebaseAuth
-    private lateinit var db: FirebaseFirestore
     private lateinit var tripsRecyclerView: RecyclerView
     private lateinit var noTripsLayout: LinearLayout
     private lateinit var tripAdapter: TripAdapter
@@ -25,8 +26,6 @@ class YourTripsActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_your_trips)
-        auth = FirebaseAuth.getInstance()
-        db = FirebaseFirestore.getInstance()
         noTripsLayout = findViewById(R.id.noTripsLayout)
         tripsRecyclerView = findViewById(R.id.tripsRecyclerView)
 
@@ -35,23 +34,19 @@ class YourTripsActivity : BaseActivity() {
             onDeleteClick = { showDeleteConfirmationDialog(it) },
             onEditClick = { startActivity(Intent(this, EditTripActivity::class.java).apply {
                 putExtra("trip_id", it.id)
-                putExtra("trip_destination", it.destination)
-                putExtra("trip_start_date", it.startDate)
-                putExtra("trip_end_date", it.endDate)
+                putTripExtras(it.id, it.destination, it.startDate, it.endDate)
                 putExtra("trip_budget", it.budget)
             })},
             onItemClick = { startActivity(Intent(this, TripDetailsActivity::class.java).apply {
                 putExtra("trip_id", it.id)
-                putExtra("trip_destination", it.destination)
-                putExtra("trip_start_date", it.startDate)
-                putExtra("trip_end_date", it.endDate)
+                putTripExtras(it.id, it.destination, it.startDate, it.endDate)
                 putExtra("trip_budget", it.budget)
             })}
         )
         tripsRecyclerView.layoutManager = LinearLayoutManager(this)
         tripsRecyclerView.adapter = tripAdapter
 
-        findViewById<android.widget.ImageButton>(R.id.backButton).setOnClickListener { finish() }
+        setupBackButton()
         findViewById<Button>(R.id.addNewTripButton).setOnClickListener {
             startActivity(Intent(this, PlanTripActivity::class.java))
         }
@@ -64,13 +59,13 @@ class YourTripsActivity : BaseActivity() {
     }
 
     private fun loadTrips() {
-        val user = auth.currentUser ?: run {
+        val user = FirebaseAuth.getInstance().currentUser ?: run {
             noTripsLayout.visibility = View.VISIBLE
             tripsRecyclerView.visibility = View.GONE
             return
         }
 
-        db.collection("trips")
+        FirebaseFirestore.getInstance().collection("trips")
             .whereEqualTo("userId", user.uid)
             .orderBy("createdAt", Query.Direction.DESCENDING)
             .get()
@@ -113,11 +108,11 @@ class YourTripsActivity : BaseActivity() {
     }
 
     private fun deleteTrip(trip: Trip) {
-        if (trip.id.isEmpty() || auth.currentUser?.uid != trip.userId) {
+        if (trip.id.isEmpty() || FirebaseAuth.getInstance().currentUser?.uid != trip.userId) {
             Toast.makeText(this, "Brak uprawnień", Toast.LENGTH_SHORT).show()
             return
         }
-        db.collection("trips").document(trip.id).delete()
+        FirebaseFirestore.getInstance().getTripDocument(trip.id).delete()
             .addOnSuccessListener {
                 Toast.makeText(this, "Usunięto", Toast.LENGTH_SHORT).show()
                 loadTrips()

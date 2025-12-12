@@ -69,11 +69,6 @@
             android:theme="@style/Theme.TravelBuddy" />
 
         <activity
-            android:name=".PackingAssistantActivity"
-            android:exported="false"
-            android:theme="@style/Theme.TravelBuddy" />
-
-        <activity
             android:name=".TripDetailsActivity"
             android:exported="false"
             android:theme="@style/Theme.TravelBuddy" />
