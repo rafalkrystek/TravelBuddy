@@ -1,0 +1,130 @@
+<resources>
+    <string name="app_name">Travel Buddy</string>
+
+    <!-- Main Activity / Landing Page -->
+    <string name="travel_buddy_title">Travel Buddy</string>
+    <string name="login_button">Zaloguj się</string>
+    <string name="register_button">Zarejestruj się</string>
+    <string name="settings_description">Ustawienia</string>
+    <string name="user_icon_description">Użytkownik</string>
+    <string name="logo_description">Logo Travel Buddy</string>
+    <string name="app_tagline">Twój inteligentny asystent podróży.\nPlanuj, pakuj i odkrywaj świat bez stresu.</string>
+    <string name="app_tagline_short">Planuj, pakuj i odkrywaj świat bez stresu</string>
+    
+    <!-- Landing Page - Features -->
+    <string name="feature_plan_title">Planuj</string>
+    <string name="feature_plan_desc">Twórz plany podróży z AI</string>
+    <string name="feature_weather_title">Pogoda</string>
+    <string name="feature_weather_desc">Sprawdzaj prognozę</string>
+    <string name="feature_packing_title">Pakuj</string>
+    <string name="feature_packing_desc">Inteligentne listy</string>
+    
+    <!-- Landing Page - CTA Section -->
+    <string name="cta_title">Rozpocznij swoją przygodę</string>
+    <string name="cta_subtitle">Dołącz do tysięcy podróżników</string>
+    <string name="terms_notice">Logując się, akceptujesz nasz Regulamin i Politykę Prywatności</string>
+
+    <!-- Login Activity -->
+    <string name="welcome_back">Witaj ponownie!</string>
+    <string name="sign_in_subtitle">Zaloguj się, aby kontynuować swoją podróż</string>
+    <string name="email_hint">Adres e-mail</string>
+    <string name="password_hint">Hasło</string>
+    <string name="forgot_password">Zapomniałeś hasła?</string>
+    <string name="sign_in_button">Zaloguj się</string>
+    <string name="dont_have_account">Nie masz konta?</string>
+    <string name="sign_up_link">Zarejestruj się</string>
+    <string name="or_divider">LUB</string>
+    <string name="back_button_description">Wróć</string>
+
+    <!-- Register Activity -->
+    <string name="create_account">Utwórz konto</string>
+    <string name="join_us_subtitle">Dołącz do nas i rozpocznij swoją przygodę</string>
+    <string name="first_name_hint">Imię</string>
+    <string name="last_name_hint">Nazwisko</string>
+    <string name="confirm_password_hint">Potwierdź hasło</string>
+    <string name="terms_agreement">Akceptuję Regulamin i Politykę Prywatności</string>
+    <string name="create_account_button">Utwórz konto</string>
+    <string name="already_have_account">Masz już konto?</string>
+    <string name="sign_in_link">Zaloguj się</string>
+    
+    <!-- Forgot Password Activity -->
+    <string name="forgot_password_title">Resetowanie hasła</string>
+    <string name="forgot_password_subtitle">Podaj adres e-mail, a wyślemy Ci link do zresetowania hasła</string>
+    <string name="reset_password_button">Wyślij link resetujący</string>
+    <string name="reset_email_sent">Link do resetowania hasła został wysłany na podany adres e-mail</string>
+
+    <!-- Dashboard Activity -->
+    <string name="dashboard_welcome">Witaj w TravelBuddy!</string>
+    <string name="dashboard_subtitle">Co chcesz dziś zaplanować?</string>
+    <string name="dashboard_actions_title">Szybkie akcje</string>
+    <string name="plan_trip">Zaplanuj podróż</string>
+    <string name="plan_trip_desc">Stwórz nową przygodę z pomocą AI</string>
+    <string name="your_trips">Twoje podróże</string>
+    <string name="your_trips_desc">Przeglądaj zaplanowane wyjazdy</string>
+    <string name="packing_assistant">Asystent pakowania</string>
+    <string name="logout">Wyloguj się</string>
+    <string name="stats_trips">podróży</string>
+    <string name="stats_upcoming">nadchodzących</string>
+    <string name="go_to">Przejdź</string>
+
+    <!-- Plan Trip Activity -->
+    <string name="plan_trip_title">Zaplanuj podróż</string>
+    <string name="destination_hint">Gdzie chcesz pojechać?</string>
+    <string name="start_date_hint">Data rozpoczęcia</string>
+    <string name="end_date_hint">Data zakończenia</string>
+    <string name="date_range_hint">Wybierz daty podróży</string>
+    <string name="budget_hint">Budżet (PLN)</string>
+    <string name="create_trip">Utwórz podróż</string>
+
+    <!-- Your Trips Activity -->
+    <string name="your_trips_title">Twoje podróże</string>
+    <string name="no_trips_yet">Nie masz jeszcze żadnych podróży</string>
+    <string name="add_new_trip">Dodaj nową podróż</string>
+
+    <!-- Packing Assistant Activity -->
+    <string name="packing_assistant_title">Asystent pakowania</string>
+    <string name="select_trip">Wybierz podróż</string>
+    <string name="packing_list">Lista rzeczy do spakowania</string>
+    <string name="add_item">Dodaj przedmiot</string>
+    <string name="item_name_hint">Nazwa przedmiotu</string>
+    <string name="category_hint">Kategoria</string>
+
+    <!-- Validation Messages (Polish) -->
+    <string name="email_required">Adres e-mail jest wymagany</string>
+    <string name="password_required">Hasło jest wymagane</string>
+    <string name="first_name_required">Imię jest wymagane</string>
+    <string name="last_name_required">Nazwisko jest wymagane</string>
+    <string name="valid_email_required">Podaj poprawny adres e-mail</string>
+    <string name="password_min_length">Hasło musi mieć co najmniej 6 znaków</string>
+    <string name="confirm_password_required">Potwierdź hasło</string>
+    <string name="passwords_dont_match">Hasła nie są identyczne</string>
+    <string name="accept_terms">Zaakceptuj Regulamin i Politykę Prywatności</string>
+    <string name="invalid_email">Nieprawidłowy adres e-mail</string>
+    <string name="password_too_weak">Hasło jest za słabe. Użyj min. 8 znaków z cyframi i literami</string>
+    <string name="field_required">Pole wymagane</string>
+
+    <!-- Auth Error Messages (Polish) -->
+    <string name="error_invalid_email">Nieprawidłowy adres e-mail</string>
+    <string name="error_user_not_found">Nie znaleziono konta o podanym adresie</string>
+    <string name="error_wrong_password">Nieprawidłowe hasło</string>
+    <string name="error_user_disabled">Konto zostało zablokowane</string>
+    <string name="error_too_many_requests">Zbyt wiele prób. Spróbuj ponownie później</string>
+    <string name="error_network">Błąd połączenia z internetem</string>
+    <string name="error_weak_password">Hasło jest za słabe</string>
+    <string name="error_email_already_in_use">Ten adres e-mail jest już używany</string>
+    <string name="error_login_failed">Logowanie nie powiodło się</string>
+    <string name="error_registration_failed">Rejestracja nie powiodła się</string>
+    
+    <!-- Success Messages (Polish) -->
+    <string name="login_successful">Zalogowano pomyślnie</string>
+    <string name="registration_successful">Rejestracja zakończona pomyślnie</string>
+
+    <!-- Toast Messages -->
+    <string name="login_attempt">Próba logowania dla: %1$s</string>
+    <string name="forgot_password_clicked">Kliknięto Zapomniałem hasła</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Pusty fragment</string>
+    
+    <!-- Google Maps API Key - will be replaced by BuildConfig -->
+    <string name="google_maps_api_key">YOUR_GOOGLE_MAPS_API_KEY</string>
+</resources>

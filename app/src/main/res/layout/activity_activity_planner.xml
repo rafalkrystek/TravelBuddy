@@ -1,0 +1,315 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/landing_background"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/padding_xlarge">
+
+        <!-- Header -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="@dimen/spacing_xlarge">
+
+            <ImageButton
+                android:id="@+id/backButton"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_arrow_back"
+                android:contentDescription="@string/back_button_description" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:layout_marginStart="@dimen/spacing_medium">
+
+                <TextView
+                    android:id="@+id/destinationTextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/TextAppearance.TravelBuddy.Headline"
+                    android:text="Albania" />
+
+                <TextView
+                    android:id="@+id/dateRangeTextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/TextAppearance.TravelBuddy.BodySecondary"
+                    android:text="24.11.2025 - 29.11.2025"
+                    android:layout_marginTop="@dimen/spacing_tiny" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- Mój Plan Card - pokazuje zapisany plan -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/myPlanCard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/spacing_large"
+            android:visibility="gone"
+            style="@style/CustomCard">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/card_padding">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="@dimen/spacing_small">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="📋 Mój plan podróży"
+                        style="@style/TextAppearance.TravelBuddy.Title" />
+
+                    <TextView
+                        android:id="@+id/planStatusTextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Zapisano"
+                        android:textColor="@color/green_success"
+                        android:textSize="@dimen/text_size_small"
+                        android:background="@drawable/badge_saved"
+                        android:paddingHorizontal="8dp"
+                        android:paddingVertical="4dp" />
+
+                </LinearLayout>
+
+                <androidx.core.widget.NestedScrollView
+                    android:id="@+id/myPlanScrollView"
+                    android:layout_width="match_parent"
+                    android:layout_height="300dp"
+                    android:fillViewport="false"
+                    android:scrollbars="vertical"
+                    android:fadeScrollbars="false">
+
+                    <TextView
+                        android:id="@+id/myPlanTextView"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="14sp"
+                        android:textColor="@color/text_primary"
+                        android:lineSpacingMultiplier="1.4"
+                        android:padding="4dp"
+                        android:textIsSelectable="true" />
+
+                </androidx.core.widget.NestedScrollView>
+
+                <!-- Przyciski akcji dla zapisanego planu -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="@dimen/spacing_medium">
+
+                    <Button
+                        android:id="@+id/editSavedPlanButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="✏️ Edytuj"
+                        style="@style/CustomButtonOutline"
+                        android:layout_marginEnd="@dimen/spacing_small" />
+
+                    <Button
+                        android:id="@+id/deleteSavedPlanButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="🗑️ Usuń"
+                        style="@style/CustomButtonDanger" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+        <!-- Activity Planning Card -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/spacing_large"
+            style="@style/CustomCard">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/card_padding">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Planowanie aktywności"
+                    style="@style/TextAppearance.TravelBuddy.Title"
+                    android:layout_marginBottom="@dimen/spacing_medium" />
+
+                <!-- User preferences input -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/spacing_medium"
+                    style="@style/CustomTextInputLayout"
+                    android:hint="Twoje preferencje (np. nie lubię zwiedzać kościołów, uwielbiam plaże)">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/userPreferencesEditText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textMultiLine"
+                        android:minLines="2"
+                        android:maxLines="4"
+                        style="@style/CustomTextInputEditText" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Generate plan button -->
+                <Button
+                    android:id="@+id/generatePlanButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Generuj plan podróży (AI)"
+                    style="@style/CustomButton"
+                    android:layout_marginBottom="@dimen/spacing_medium" />
+
+                <!-- Loading indicator -->
+                <TextView
+                    android:id="@+id/planLoadingTextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/TextAppearance.TravelBuddy.BodySecondary"
+                    android:text="Generowanie planu..."
+                    android:visibility="gone"
+                    android:layout_marginBottom="@dimen/spacing_medium" />
+
+                <!-- Generated plan display -->
+                <androidx.core.widget.NestedScrollView
+                    android:id="@+id/planScrollView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:maxHeight="400dp"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:id="@+id/generatedPlanTextView"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        style="@style/TextAppearance.TravelBuddy.Body"
+                        android:textIsSelectable="true" />
+
+                </androidx.core.widget.NestedScrollView>
+
+                <!-- Sekcja modyfikacji planu (widoczna po wygenerowaniu) -->
+                <LinearLayout
+                    android:id="@+id/modifyPlanSection"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone"
+                    android:layout_marginTop="@dimen/spacing_medium">
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="@color/divider"
+                        android:layout_marginBottom="@dimen/spacing_medium" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Modyfikuj plan"
+                        style="@style/TextAppearance.TravelBuddy.Subtitle"
+                        android:layout_marginBottom="@dimen/spacing_small" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Napisz, co chcesz zmienić w planie. AI zmodyfikuje plan według Twoich wskazówek."
+                        style="@style/TextAppearance.TravelBuddy.BodySecondary"
+                        android:layout_marginBottom="@dimen/spacing_small" />
+
+                    <!-- Pole do modyfikacji -->
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/spacing_small"
+                        style="@style/CustomTextInputLayout"
+                        android:hint="Co chcesz zmienić? (np. dodaj więcej restauracji, zmień dzień 2)">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/modifyPlanEditText"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="textMultiLine"
+                            android:minLines="2"
+                            android:maxLines="4"
+                            style="@style/CustomTextInputEditText" />
+
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <!-- Przyciski akcji -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="@dimen/spacing_small">
+
+                        <Button
+                            android:id="@+id/modifyPlanButton"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Modyfikuj plan"
+                            style="@style/CustomButton"
+                            android:layout_marginEnd="@dimen/spacing_small" />
+
+                        <Button
+                            android:id="@+id/savePlanButton"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Zapisz plan"
+                            style="@style/CustomButtonOutline" />
+
+                    </LinearLayout>
+
+                    <!-- Przycisk usuń/nowy plan -->
+                    <Button
+                        android:id="@+id/deletePlanButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="🗑️ Usuń plan i wygeneruj nowy"
+                        style="@style/CustomButtonDanger" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+    </LinearLayout>
+
+</ScrollView>
+

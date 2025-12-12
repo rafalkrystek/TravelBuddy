@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Base Colors -->
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    
+    <!-- Travel Buddy Color Palette - Warm Beige Theme -->
+    <color name="beige_light">#F5F5DC</color>
+    <color name="beige_lighter">#FFF8F0</color>
+    <color name="beige_medium">#E8E8D8</color>
+    <color name="beige_dark">#D4D4C4</color>
+    <color name="beige_darker">#C4C4B4</color>
+    
+    <!-- Primary Accent - Crimson Red -->
+    <color name="red_primary">#DC143C</color>
+    <color name="red_dark">#B01030</color>
+    <color name="red_darker">#8B0A2A</color>
+    <color name="red_light">#FF4D6D</color>
+    <color name="red_lighter">#FF8A9E</color>
+    <color name="red_surface">#FFF0F3</color>
+    <color name="red_transparent_10">#1ADC143C</color>
+    <color name="red_transparent_20">#33DC143C</color>
+    
+    <!-- Text Colors -->
+    <color name="text_primary">#2C2C2C</color>
+    <color name="text_secondary">#666666</color>
+    <color name="text_tertiary">#888888</color>
+    <color name="text_hint">#999999</color>
+    <color name="text_disabled">#BBBBBB</color>
+    <color name="text_on_primary">#FFFFFF</color>
+    
+    <!-- Surface Colors -->
+    <color name="card_background">#FFFFFF</color>
+    <color name="card_background_elevated">#FAFAFA</color>
+    <color name="surface_overlay">#0A000000</color>
+    <color name="divider">#E0E0E0</color>
+    <color name="divider_light">#F0F0F0</color>
+    
+    <!-- Semantic Colors -->
+    <color name="error_red">#D32F2F</color>
+    <color name="error_red_light">#FFEBEE</color>
+    <color name="warning_orange">#FF9800</color>
+    <color name="warning_orange_light">#FFF3E0</color>
+    <color name="success_green">#4CAF50</color>
+    <color name="green_success">#4CAF50</color>
+    <color name="green_success_light">#E8F5E9</color>
+    <color name="info_blue">#2196F3</color>
+    <color name="info_blue_light">#E3F2FD</color>
+    
+    <!-- Shadows and Overlays -->
+    <color name="shadow_light">#15000000</color>
+    <color name="shadow_medium">#25000000</color>
+    <color name="overlay_dark">#80000000</color>
+    <color name="overlay_light">#40FFFFFF</color>
+</resources>

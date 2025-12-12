@@ -1,0 +1,56 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Reguły dla kolekcji "trips"
+    match /trips/{tripId} {
+      // Pozwól na odczyt tylko jeśli użytkownik jest zalogowany i podróż należy do niego
+      allow read: if request.auth != null && 
+                     resource.data.userId == request.auth.uid;
+      
+      // Pozwól na utworzenie podróży tylko jeśli użytkownik jest zalogowany 
+      // i userId w dokumencie pasuje do zalogowanego użytkownika
+      allow create: if request.auth != null && 
+                       request.resource.data.userId == request.auth.uid;
+      
+      // Pozwól na aktualizację tylko jeśli użytkownik jest zalogowany 
+      // i podróż należy do niego
+      allow update: if request.auth != null && 
+                       resource.data.userId == request.auth.uid &&
+                       request.resource.data.userId == request.auth.uid;
+      
+      // Pozwól na usunięcie tylko jeśli użytkownik jest zalogowany 
+      // i podróż należy do niego
+      allow delete: if request.auth != null && 
+                       resource.data.userId == request.auth.uid;
+      
+      // Reguły dla subkolekcji "expenses"
+      match /expenses/{expenseId} {
+        // Funkcja pomocnicza sprawdzająca czy użytkownik jest właścicielem podróży
+        function isOwner() {
+          return request.auth != null && 
+                 get(/databases/$(database)/documents/trips/$(tripId)).data.userId == request.auth.uid;
+        }
+        
+        // Pozwól na odczyt tylko jeśli użytkownik jest właścicielem podróży
+        allow read: if isOwner();
+        
+        // Pozwól na utworzenie wydatku tylko jeśli użytkownik jest właścicielem podróży
+        allow create: if isOwner();
+        
+        // Pozwól na aktualizację wydatku tylko jeśli użytkownik jest właścicielem podróży
+        allow update: if isOwner();
+        
+        // Pozwól na usunięcie wydatku tylko jeśli użytkownik jest właścicielem podróży
+        allow delete: if isOwner();
+      }
+    }
+    
+    // Domyślnie blokuj dostęp do wszystkich innych kolekcji
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+

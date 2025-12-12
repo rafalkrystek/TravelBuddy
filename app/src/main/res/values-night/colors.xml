@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Base Colors (same in dark mode) -->
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    
+    <!-- Travel Buddy Dark Mode Color Palette -->
+    <!-- Dark backgrounds - replacing beige with dark grays -->
+    <color name="beige_light">#121212</color>        <!-- Dark background (Material Dark) -->
+    <color name="beige_lighter">#1E1E1E</color>      <!-- Slightly lighter dark -->
+    <color name="beige_medium">#2C2C2C</color>      <!-- Medium dark gray -->
+    <color name="beige_dark">#3A3A3A</color>        <!-- Lighter dark gray -->
+    <color name="beige_darker">#4A4A4A</color>      <!-- Even lighter dark gray -->
+    
+    <!-- Primary Accent - Lighter reds for better contrast on dark -->
+    <color name="red_primary">#FF4D6D</color>        <!-- Lighter red for dark mode -->
+    <color name="red_dark">#DC143C</color>           <!-- Original red (for variants) -->
+    <color name="red_darker">#B01030</color>         <!-- Darker red -->
+    <color name="red_light">#FF6B8A</color>          <!-- Even lighter red -->
+    <color name="red_lighter">#FF8A9E</color>       <!-- Very light red -->
+    <color name="red_surface">#2A1A1D</color>      <!-- Dark red tinted surface -->
+    <color name="red_transparent_10">#1AFF4D6D</color>
+    <color name="red_transparent_20">#33FF4D6D</color>
+    
+    <!-- Text Colors - Inverted for dark mode -->
+    <color name="text_primary">#FFFFFF</color>       <!-- White text -->
+    <color name="text_secondary">#B0B0B0</color>     <!-- Light gray for secondary -->
+    <color name="text_tertiary">#909090</color>      <!-- Medium gray -->
+    <color name="text_hint">#707070</color>          <!-- Darker gray for hints -->
+    <color name="text_disabled">#505050</color>     <!-- Very dark gray for disabled -->
+    <color name="text_on_primary">#FFFFFF</color>    <!-- White on red buttons -->
+    
+    <!-- Surface Colors - Dark surfaces -->
+    <color name="card_background">#1E1E1E</color>           <!-- Dark card background -->
+    <color name="card_background_elevated">#2C2C2C</color>  <!-- Elevated dark card -->
+    <color name="surface_overlay">#40000000</color>         <!-- Dark overlay -->
+    <color name="divider">#404040</color>                    <!-- Dark divider -->
+    <color name="divider_light">#333333</color>              <!-- Lighter dark divider -->
+    
+    <!-- Semantic Colors - Adjusted for dark mode -->
+    <color name="error_red">#FF5252</color>          <!-- Lighter red for errors -->
+    <color name="error_red_light">#3D1F1F</color>    <!-- Dark red tinted surface -->
+    <color name="warning_orange">#FFB74D</color>    <!-- Lighter orange -->
+    <color name="warning_orange_light">#3D2F1F</color> <!-- Dark orange tinted -->
+    <color name="success_green">#66BB6A</color>     <!-- Lighter green -->
+    <color name="green_success">#66BB6A</color>      <!-- Same as success_green -->
+    <color name="green_success_light">#1F2E1F</color> <!-- Dark green tinted -->
+    <color name="info_blue">#42A5F5</color>         <!-- Lighter blue -->
+    <color name="info_blue_light">#1F2A3D</color>   <!-- Dark blue tinted -->
+    
+    <!-- Shadows and Overlays - Adjusted for dark mode -->
+    <color name="shadow_light">#30000000</color>    <!-- Darker shadow -->
+    <color name="shadow_medium">#50000000</color>   <!-- Medium shadow -->
+    <color name="overlay_dark">#CC000000</color>     <!-- Darker overlay -->
+    <color name="overlay_light">#60FFFFFF</color>    <!-- Light overlay on dark -->
+</resources>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Base gradient - Dark mode version -->
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:angle="160"
+                android:startColor="@color/beige_light"
+                android:centerColor="@color/beige_lighter"
+                android:endColor="@color/beige_medium"
+                android:type="linear" />
+        </shape>
+    </item>
+    
+    <!-- Subtle pattern overlay - top circle (darker) -->
+    <item
+        android:top="-100dp"
+        android:right="-80dp">
+        <shape android:shape="oval">
+            <size android:width="300dp" android:height="300dp"/>
+            <solid android:color="@color/red_transparent_10" />
+        </shape>
+    </item>
+    
+    <!-- Bottom decorative element (darker) -->
+    <item
+        android:bottom="-150dp"
+        android:left="-100dp">
+        <shape android:shape="oval">
+            <size android:width="400dp" android:height="400dp"/>
+            <solid android:color="@color/red_transparent_10" />
+        </shape>
+    </item>
+</layer-list>
+
