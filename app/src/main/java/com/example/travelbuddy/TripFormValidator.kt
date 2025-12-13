@@ -14,15 +14,13 @@ object TripFormValidator {
         country: String,
         city: String,
         startDate: Long?,
-        endDate: Long?,
-        budget: Int
+        endDate: Long?
     ): Pair<Boolean, String> {
         return when {
             country.isEmpty() -> Pair(false, "Wybierz kraj")
             city.isEmpty() -> Pair(false, "Wybierz miasto")
             startDate == null || endDate == null -> Pair(false, "Wybierz daty")
             startDate >= endDate -> Pair(false, "Data końca musi być późniejsza niż data początku")
-            budget <= 0 -> Pair(false, "Wybierz budżet")
             else -> Pair(true, "")
         }
     }

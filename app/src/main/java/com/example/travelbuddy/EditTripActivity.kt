@@ -8,14 +8,12 @@ import android.widget.Toast
 import com.google.android.material.datepicker.CalendarConstraints
 import com.google.android.material.datepicker.DateValidatorPointForward
 import com.google.android.material.datepicker.MaterialDatePicker
-import com.google.android.material.slider.Slider
 import com.google.android.material.textfield.MaterialAutoCompleteTextView
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import com.example.travelbuddy.helpers.DateHelper
 import com.example.travelbuddy.helpers.DropdownHelper
 import com.example.travelbuddy.helpers.getTripDocument
-import com.example.travelbuddy.helpers.FormatHelper
 import com.example.travelbuddy.helpers.setupBackButton
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -47,22 +45,17 @@ class EditTripActivity : BaseActivity() {
         cityEditText = findViewById(R.id.cityEditText)
         cityInputLayout = findViewById(R.id.cityInputLayout)
         val dateRangeEditText = findViewById<TextInputEditText>(R.id.dateRangeEditText)
-        val budgetSlider = findViewById<Slider>(R.id.budgetSlider)
-        val budgetValueTextView = findViewById<TextView>(R.id.budgetValueTextView)
         val createTripButton = findViewById<Button>(R.id.createTripButton)
 
         val currentDestination = intent.getStringExtra("trip_destination") ?: ""
         val currentStartDate = intent.getStringExtra("trip_start_date") ?: ""
         val currentEndDate = intent.getStringExtra("trip_end_date") ?: ""
-        val currentBudget = intent.getIntExtra("trip_budget", 0)
 
         val (city, country) = DestinationParser.parseDestination(currentDestination)
         selectedCity = city
         selectedCountry = country
         
         dateRangeEditText.setText("$currentStartDate - $currentEndDate")
-        budgetSlider.value = currentBudget.toFloat()
-        budgetValueTextView.text = "$currentBudget zł"
 
         DateHelper.parseDate(currentStartDate)?.let { selectedStartDate = it.time }
         DateHelper.parseDate(currentEndDate)?.let { selectedEndDate = it.time }
@@ -87,21 +80,18 @@ class EditTripActivity : BaseActivity() {
                 }
         }
 
-        budgetValueTextView.text = FormatHelper.formatBudget(budgetSlider.value.toInt())
-        budgetSlider.addOnChangeListener { _, value, _ -> budgetValueTextView.text = FormatHelper.formatBudget(value.toInt()) }
         setupBackButton()
         createTripButton.text = "Zapisz zmiany"
         createTripButton.setOnClickListener {
             val country = countryEditText.text?.toString()?.trim() ?: ""
             val city = cityEditText.text?.toString()?.trim() ?: ""
-            val budget = budgetSlider.value.toInt()
             
             val (isValid, errorMessage) = TripFormValidator.validateTripForm(
-                country, city, selectedStartDate, selectedEndDate, budget
+                country, city, selectedStartDate, selectedEndDate
             )
             
             if (isValid) {
-                updateTrip(country, city, selectedStartDate!!, selectedEndDate!!, budget)
+                updateTrip(country, city, selectedStartDate!!, selectedEndDate!!)
             } else {
                 Toast.makeText(this, errorMessage, Toast.LENGTH_LONG).show()
             }
@@ -151,7 +141,7 @@ class EditTripActivity : BaseActivity() {
         }
     }
 
-    private fun updateTrip(country: String, city: String, startDate: Long, endDate: Long, budget: Int) {
+    private fun updateTrip(country: String, city: String, startDate: Long, endDate: Long) {
         val user = FirebaseAuth.getInstance().currentUser
         if (user == null) {
             Toast.makeText(this, "Błąd: Nie jesteś zalogowany", Toast.LENGTH_SHORT).show()
@@ -176,7 +166,7 @@ class EditTripActivity : BaseActivity() {
             "endDate" to DateHelper.formatDate(endDate),
             "startDateTimestamp" to startDate,
             "endDateTimestamp" to endDate,
-                    "budget" to budget,
+                    "budget" to 0,
                     "updatedAt" to com.google.firebase.Timestamp.now()
                 ) as Map<String, Any>).addOnSuccessListener {
                     Toast.makeText(this, "Zaktualizowano", Toast.LENGTH_LONG).show()

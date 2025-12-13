@@ -17,7 +17,6 @@ class TripAdapter(
     class TripViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val destinationTextView: TextView = itemView.findViewById(R.id.destinationTextView)
         val dateRangeTextView: TextView = itemView.findViewById(R.id.dateRangeTextView)
-        val budgetTextView: TextView = itemView.findViewById(R.id.budgetTextView)
         val editButton: ImageButton = itemView.findViewById(R.id.editButton)
         val deleteButton: ImageButton = itemView.findViewById(R.id.deleteButton)
     }
@@ -29,13 +28,6 @@ class TripAdapter(
         trips[position].let { trip ->
             holder.destinationTextView.text = trip.destination
             holder.dateRangeTextView.text = "${trip.startDate} - ${trip.endDate}"
-            // Jeśli jest remainingBudget, pokaż "Pozostało:", w przeciwnym razie "Budżet:"
-            val budgetText = if (trip.remainingBudget != null) {
-                "Pozostało: ${trip.remainingBudget} zł"
-            } else {
-                "Budżet: ${trip.budget} zł"
-            }
-            holder.budgetTextView.text = budgetText
             holder.itemView.setOnClickListener { onItemClick(trip) }
             holder.editButton.setOnClickListener { onEditClick(trip) }
             holder.deleteButton.setOnClickListener { onDeleteClick(trip) }

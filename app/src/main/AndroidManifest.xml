@@ -89,11 +89,6 @@
             android:theme="@style/Theme.TravelBuddy" />
 
         <activity
-            android:name=".TripBudgetCalculatorActivity"
-            android:exported="false"
-            android:theme="@style/Theme.TravelBuddy" />
-
-        <activity
             android:name=".EditTripActivity"
             android:exported="false"
             android:theme="@style/Theme.TravelBuddy" />

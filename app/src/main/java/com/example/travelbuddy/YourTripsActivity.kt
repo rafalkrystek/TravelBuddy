@@ -35,12 +35,10 @@ class YourTripsActivity : BaseActivity() {
             onEditClick = { startActivity(Intent(this, EditTripActivity::class.java).apply {
                 putExtra("trip_id", it.id)
                 putTripExtras(it.id, it.destination, it.startDate, it.endDate)
-                putExtra("trip_budget", it.budget)
             })},
             onItemClick = { startActivity(Intent(this, TripDetailsActivity::class.java).apply {
                 putExtra("trip_id", it.id)
                 putTripExtras(it.id, it.destination, it.startDate, it.endDate)
-                putExtra("trip_budget", it.budget)
             })}
         )
         tripsRecyclerView.layoutManager = LinearLayoutManager(this)
@@ -72,16 +70,13 @@ class YourTripsActivity : BaseActivity() {
             .addOnSuccessListener { docs ->
                 tripsList.clear()
                 docs.forEach { doc ->
-                    val initialBudget = doc.getLong("budget")?.toInt() ?: 0
-                    val remainingBudget = doc.getLong("remainingBudget")?.toInt()
-                    
                     tripsList.add(Trip(
                         id = doc.id,
                         destination = doc.getString("destination") ?: "",
                         startDate = doc.getString("startDate") ?: "",
                         endDate = doc.getString("endDate") ?: "",
-                        budget = initialBudget,
-                        remainingBudget = remainingBudget,
+                        budget = 0,
+                        remainingBudget = null,
                         userId = doc.getString("userId") ?: "",
                         createdAt = doc.getDate("createdAt") ?: java.util.Date(),
                         packingList = (doc.get("packingList") as? List<*>)?.mapNotNull { it as? String } ?: emptyList(),

@@ -79,13 +79,10 @@ class PlanTripActivityFirebaseTest {
         activityRule.launchActivity(null)
 
         // Check if all form fields are visible
-        onView(withId(R.id.destinationEditText))
+        onView(withId(R.id.countryEditText))
             .check(matches(isDisplayed()))
         
         onView(withId(R.id.dateRangeEditText))
-            .check(matches(isDisplayed()))
-        
-        onView(withId(R.id.budgetSlider))
             .check(matches(isDisplayed()))
         
         onView(withId(R.id.createTripButton))
@@ -96,12 +93,9 @@ class PlanTripActivityFirebaseTest {
     fun testSaveTripWithValidData() {
         activityRule.launchActivity(null)
 
-        val destination = "Test Destination ${System.currentTimeMillis()}"
-        val budget = 5000
-
         // Fill in the trip form
-        onView(withId(R.id.destinationEditText))
-            .perform(click(), typeText(destination), closeSoftKeyboard())
+        onView(withId(R.id.countryEditText))
+            .perform(click())
         
         // Select dates (this is complex with date picker, so we'll test the save function directly)
         // For now, we'll verify the form is filled
@@ -139,7 +133,6 @@ class PlanTripActivityFirebaseTest {
         val destination = "Test Trip ${System.currentTimeMillis()}"
         val startDate = System.currentTimeMillis()
         val endDate = startDate + (7 * 24 * 60 * 60 * 1000) // 7 days later
-        val budget = 5000
 
         // Create trip document directly in Firestore
         val trip = hashMapOf(
@@ -148,7 +141,7 @@ class PlanTripActivityFirebaseTest {
             "endDate" to "08.01.2025",
             "startDateTimestamp" to startDate,
             "endDateTimestamp" to endDate,
-            "budget" to budget,
+            "budget" to 0,
             "userId" to user!!.uid,
             "createdAt" to com.google.firebase.Timestamp.now()
         )
@@ -205,7 +198,6 @@ class PlanTripActivityFirebaseTest {
         val destination = "User Trip Test ${System.currentTimeMillis()}"
         val startDate = System.currentTimeMillis()
         val endDate = startDate + (7 * 24 * 60 * 60 * 1000)
-        val budget = 3000
 
         val trip = hashMapOf(
             "destination" to destination,
@@ -213,7 +205,7 @@ class PlanTripActivityFirebaseTest {
             "endDate" to "08.01.2025",
             "startDateTimestamp" to startDate,
             "endDateTimestamp" to endDate,
-            "budget" to budget,
+            "budget" to 0,
             "userId" to user!!.uid,
             "createdAt" to com.google.firebase.Timestamp.now()
         )
