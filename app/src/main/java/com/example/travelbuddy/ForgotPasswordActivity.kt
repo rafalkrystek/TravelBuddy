@@ -21,15 +21,15 @@ class ForgotPasswordActivity : BaseActivity() {
             if (!ValidationHelper.validateEmail(email, emailEdit, this)) return@setOnClickListener
             
             FirebaseAuth.getInstance().sendPasswordResetEmail(email).addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    Toast.makeText(this, getString(R.string.reset_email_sent), Toast.LENGTH_LONG).show()
-                    finish()
-                } else {
+                    if (task.isSuccessful) {
+                        Toast.makeText(this, getString(R.string.reset_email_sent), Toast.LENGTH_LONG).show()
+                        finish()
+                    } else {
                     Toast.makeText(this, FirebaseErrorHelper.getPasswordResetErrorMessage(
                         FirebaseErrorHelper.getErrorCode(task.exception), this,
                         "Błąd: ${task.exception?.localizedMessage}"), Toast.LENGTH_LONG).show()
+                    }
                 }
-            }
         }
     }
 }

@@ -122,10 +122,10 @@ class EditTripActivity : BaseActivity() {
     
     private fun updateCitiesForCountry(country: String) {
         val cities = CountryCitiesData.getCitiesForCountry(country)
-        cityInputLayout.isEnabled = true
-        cityEditText.isEnabled = true
+            cityInputLayout.isEnabled = true
+            cityEditText.isEnabled = true
         cityInputLayout.hint = if (cities.isNotEmpty()) "Wybierz miasto" else "Wpisz miasto"
-        
+            
         if (cities.isNotEmpty()) {
             cityEditText.setAdapter(ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, cities))
             cityEditText.threshold = 1
@@ -167,16 +167,16 @@ class EditTripActivity : BaseActivity() {
             "startDateTimestamp" to startDate,
             "endDateTimestamp" to endDate,
                     "budget" to 0,
-                    "updatedAt" to com.google.firebase.Timestamp.now()
-                ) as Map<String, Any>).addOnSuccessListener {
-                    Toast.makeText(this, "Zaktualizowano", Toast.LENGTH_LONG).show()
+            "updatedAt" to com.google.firebase.Timestamp.now()
+        ) as Map<String, Any>).addOnSuccessListener {
+            Toast.makeText(this, "Zaktualizowano", Toast.LENGTH_LONG).show()
                     cityEditText.postDelayed({ finish() }, 1500)
-                }.addOnFailureListener {
+        }.addOnFailureListener {
                     Toast.makeText(this, "Błąd: ${it.message}", Toast.LENGTH_LONG).show()
                 }
             }
             .addOnFailureListener {
-                Toast.makeText(this, "Błąd: ${it.message}", Toast.LENGTH_LONG).show()
-            }
+            Toast.makeText(this, "Błąd: ${it.message}", Toast.LENGTH_LONG).show()
+        }
     }
 }

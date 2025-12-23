@@ -393,10 +393,10 @@ class TripPackingAssistantActivity : BaseActivity() {
             PackingListBuilder.addChildrenItems(packingList, childrenCount, isBackpack, tripDays, climateType)
         }
         
-        if (climateType == "BARDZO_GORĄCO") {
-            packingList.add("💡 TIP: Przy ${avgTemp.toInt()}°C pij dużo wody i unikaj słońca w południe")
-        }
-        
+                if (climateType == "BARDZO_GORĄCO") {
+                    packingList.add("💡 TIP: Przy ${avgTemp.toInt()}°C pij dużo wody i unikaj słońca w południe")
+                }
+                
         packingList.removeAll { it.isEmpty() || it.isBlank() }
         
         // Aktualizuj UI

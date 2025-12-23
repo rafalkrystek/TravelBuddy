@@ -52,12 +52,12 @@ class PlanTripActivity : BaseActivity() {
                 .build()
                 .apply {
                     addOnPositiveButtonClickListener {
-                        selectedStartDate = it.first
-                        selectedEndDate = it.second
+                selectedStartDate = it.first
+                selectedEndDate = it.second
                         dateRangeEditText.setText("${DateHelper.formatDate(it.first)} - ${DateHelper.formatDate(it.second)}")
                     }
                     show(supportFragmentManager, "DATE_PICKER")
-                }
+            }
         }
 
         setupBackButton()
@@ -93,11 +93,11 @@ class PlanTripActivity : BaseActivity() {
     
     private fun updateCitiesForCountry(country: String) {
         val cities = CountryCitiesData.getCitiesForCountry(country)
-        cityInputLayout.isEnabled = true
-        cityEditText.isEnabled = true
-        cityEditText.setText("", false)
+            cityInputLayout.isEnabled = true
+            cityEditText.isEnabled = true
+            cityEditText.setText("", false)
         cityInputLayout.hint = if (cities.isNotEmpty()) "Wybierz miasto" else "Wpisz miasto"
-        
+            
         if (cities.isNotEmpty()) {
             cityEditText.setAdapter(ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, cities))
             cityEditText.threshold = 1
